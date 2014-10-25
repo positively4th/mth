@@ -9,12 +9,12 @@ with. I need to do some cosmetical changes to the source before
 uploading all of it. If I can keep my motivation up and/or there is
 any interest the following parts will be added in the coming months:
 
-* Core - almost ready
+* Core - available
 
 Inlucdes the matrix/vector class. The function class. Basic
 functions. All functions support function composition and analytical derivatives. 
 
-* Equations - not ready
+* Solvers - in progress
 
 A n-dimensional Newton–Raphson solver.
 
