@@ -1,17 +1,24 @@
+
 INCS = 	-I. \
 	-I../misc\
-	-I../slatec \
+	-I../slatec\
+	-I../core\
 	-I/usr/include \
-
 
 LIBS =	\
 	-L./ \
 	-L../ \
 	-L/usr/lib \
 	-lmthmisc \
+	-lmthslatec \
 	-lmthcore \
 	-lstdc++ \
 	-lm \
+
+OBJS = \
+	tnsolver.o \
+
+
 
 #FLAGS = -g
 #FLAGS = -O2 -fpermissive
@@ -31,43 +38,33 @@ DEFS = -D_SAFE -D_DEBUG -D_MATHOPT -DMTH -D_SLATEC
 #DEFS = -D_SAFE -D_DEBUG -D_OCTAVE -D_MATHOPT
 #DEFS = -D_DEBUG -D_SAFE
 
-ROOTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-export LIBDIR="$(ROOTDIR)/libs"
 
-SUBDIRS = misc slatec core
-INSTALLDIRS = $(SUBDIRS:%=install-%)
+STATIC_LIB=libmthsolvers.a
+DYNAMIC_LIB=libmthsolvers.so.1.0.1
+ifndef LIBDIR
+LIBDIR=.
+endif
 
-.PHONY: subdirs $(SUBDIRS)
+libs: $(OBJS)
+	gcc -shared -Wl,-soname,libmthcore.so.1 -Wl,-export-dynamic \
+	-o $(DYNAMIC_LIB) $(OBJS)  $(FLAGS)
+	ar cru $(STATIC_LIB) $(OBJS) 
+	ranlib $(STATIC_LIB)
 
-subdirs: $(SUBDIRS)
+install: 
+	cp $(STATIC_LIB) $(LIBDIR)	
+	cp $(DYNAMIC_LIB) $(LIBDIR)	
 
-$(SUBDIRS):
-	$(MAKE) -C $@
+tnsolver.o : tnsolver.h tnsolver.cpp   
+	cc -c tnsolver.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
-install: libs $(INSTALLDIRS)
 
-libs:
-	mkdir -p libs
-
-tests:
-	make -C tests
-
-$(INSTALLDIRS): 
-	$(MAKE) -C $(@:install-%=%) install
-
-slatec: misc
-
-core: slatec
 
 clean:
-	make -C tests clean 
-	make -C misc clean 
-	make -C slatec clean
-	make -C core clean
-	rm -rf *.o
-	rm -rf *.a
-	rm -rf libs
+	rm -f $(STATIC_LIB)
+	rm -f $(DYNAMIC_LIB)
+	rm -f *.o
+	rm -f *.a
 
 all:
 	make 
-	make libs

@@ -1,0 +1,13 @@
+src/slatec/src/*.P
+src/slatec/src/*.f
+src/slatec/src/*.c
+src/slatec/src/*.o
+src/*.o
+src/*/*.o
+src/*.a
+src/*/*.a
+
+
+src/*~
+src/*/*~
+src/*/*/*~

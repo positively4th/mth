@@ -17,6 +17,7 @@ OBJS =  \
 	timetools.o \
 	tpointerstack.o \
 	linkedlist.o linkedlistpost.o \
+	option0.o options.o toption.o \
 #	filetools.o
 #	clocker.o \
 #	xmlparser.o xmlfinder.o \
@@ -75,6 +76,15 @@ randomtools.o : randomtools.h randomtools.cpp debug.h
 
 stlstringtools.o : stlstringtools.h stlstringtools.cpp debug.h  
 	cc -c stlstringtools.cpp -DGCC $(INCS) $(DEFS) $(FLAGS)
+
+option0.o : option0.h option0.cpp options.h texception.h  
+	cc -c option0.cpp $(INCS) $(DEFS) $(FLAGS) -std=gnu++0x
+
+toption.o : toption.h toption.cpp option0.h texception.h  
+	cc -c toption.cpp $(INCS) $(DEFS) $(FLAGS) -std=gnu++0x
+
+options.o : options.h options.cpp option0.h texception.h  
+	cc -c options.cpp $(INCS) $(DEFS) $(FLAGS) -std=gnu++0x
 
 
 xmlparser.o : xmlparser.h xmlparser.cpp debug.h  
@@ -142,6 +152,8 @@ classes: *.h *.cpp *.dxcfg
 clean:
 	rm -f *.o
 	rm -f *.a
+	rm -f $(STATIC_LIB)
+	rm -f $(SHARED_LIB)
 
 tests: 
 	make teststlstringtools
