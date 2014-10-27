@@ -14,7 +14,7 @@ any interest the following parts will be added in the coming months:
 Inlucdes the matrix/vector class. The function class. Basic
 functions. All functions support function composition and analytical derivatives. 
 
-* Solvers - in progress
+* Solvers - available
 
 A n-dimensional Newton–Raphson solver.
 
