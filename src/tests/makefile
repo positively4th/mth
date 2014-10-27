@@ -26,7 +26,7 @@ DEFS = -D_SAFE -D_DEBUG -D_MATHOPT -DMTH -D_SLATEC
 ROOTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 export LIBDIR="$(ROOTDIR)/libs"
 
-SUBDIRS = core
+SUBDIRS = misc core solvers 
 .PHONY: subdirs $(SUBDIRS)
 
 subdirs: $(SUBDIRS)

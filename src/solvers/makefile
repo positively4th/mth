@@ -3,6 +3,7 @@ INCS = 	-I. \
 	-I../misc\
 	-I../slatec\
 	-I../core\
+	-I../solvers\
 	-I/usr/include \
 
 LIBS =	\
@@ -16,6 +17,8 @@ LIBS =	\
 	-lm \
 
 OBJS = \
+	templates.o \
+	tintervalstepper.o \
 	tnsolver.o \
 
 
@@ -55,8 +58,14 @@ install:
 	cp $(STATIC_LIB) $(LIBDIR)	
 	cp $(DYNAMIC_LIB) $(LIBDIR)	
 
-tnsolver.o : tnsolver.h tnsolver.cpp   
+tnsolver.o : tnsolver.h tnsolver.cpp tstepper.h   
 	cc -c tnsolver.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
+
+tintervalstepper.o : tintervalstepper.cpp tintervalstepper.h tnsolver.h    
+	cc -c tintervalstepper.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
+
+templates.o : templates.cpp   
+	cc -c templates.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
 
 
