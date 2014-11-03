@@ -23,20 +23,22 @@ OBJS = \
 	tabs.o tselector.o tfog.o tintegral.o treciprocal.o tsqrt.o \
 	tnumericalderivative.o \
 	ttranslate.o tparameter.o tsign.o \
+	tinterval.o \
+	tlinear.o tquadratic.o \
 	templates.o \
+#	tgridfunction.o \
 #	tmathexception.o \
 #	texp.o  \
 #	tsin.o tcos.o ttan.o tsec.o tarccos.o tarcsin.o tarctan.o tarcsec.o \
 #	tparameters.o \
-#	tconstants.o tlinear.o tquadratic.o \
-#	tgridfunction.o \
+#	tconstants.o \
 #	tsolver.o tlagrange.o tguesses.o tkuhntucker.o toptimalcontrol.o \
 #	tnsolver.o tintervalstepper.o tnmaximizer.o \
 #	tregression.o tols.o tfitls.o \
 #	tbinregression.o tlogit.o \
 #	tstat2.o \
 #	tplot.o tmodel.o \
-#	tformula.o tnamedfunction.o tnamedpointer.o tinterval.o tuniverse.o \
+#	tformula.o tnamedfunction.o tnamedpointer.o tuniverse.o \
 #	tcommander.o tcommand.o \
 #	tdefinecommand.o tevaluatecommand.o tplotcommand.o \
 #	tsolvecommand.o targmaxcommand.o \

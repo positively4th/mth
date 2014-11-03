@@ -16,12 +16,8 @@ LIBS =	\
 #FLAGS = -g
 #FLAGS = -O2 -fpermissive
 FLAGS = -g -fno-default-inline -fpic  -rdynamic -fno-stack-protector -frounding-math -fsignaling-nans 
-# -pg -static
 
 LINKERFLAGS = -rdynamic -u MAIN__
-#-pg 
-#-static
-#LINKERFLAGS = -pg
 
 TEST_LINKERFLAGS = \
 	-lboost_unit_test_framework \
@@ -34,7 +30,7 @@ DEFS = -D_SAFE -D_DEBUG -D_MATHOPT -DMTH -D_SLATEC
 ROOTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 export LIBDIR="$(ROOTDIR)/libs"
 
-SUBDIRS = misc slatec core solvers
+SUBDIRS = misc slatec core solvers plot
 INSTALLDIRS = $(SUBDIRS:%=install-%)
 
 .PHONY: subdirs $(SUBDIRS)
@@ -60,13 +56,13 @@ slatec: misc
 core: slatec
 
 clean:
-	make -C tests clean 
 	make -C misc clean 
 	make -C slatec clean
 	make -C core clean
 	rm -rf *.o
 	rm -rf *.a
 	rm -rf libs
+	make -C tests clean 
 
 all:
 	make 

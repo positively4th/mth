@@ -67,10 +67,6 @@ clean:
 	make -C src/ clean
 	rm -rf *.o
 	rm -rf *.a
-#	ln -s /usr/lib/libc.a
-
-#download: 
-#	make download -C src/
 
 all :
 	make $(STATIC_LIB)

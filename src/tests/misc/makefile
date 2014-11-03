@@ -17,10 +17,10 @@ LIBS =	\
 	-lm \
 
 OBJS = \
+	test_stlstringtools.o \
 	test_options.o \
 
-	FLAGS = -g -fno-default-inline -fpic  -rdynamic -fno-stack-protector -frounding-math -fsignaling-nans 
-
+FLAGS = -g -fno-default-inline -fpic  -rdynamic -fno-stack-protector -frounding-math -fsignaling-nans 
 #LINKERFLAGS = -u MAIN__
 LINKERFLAGS = -rdynamic -u MAIN__
 
@@ -34,12 +34,15 @@ DEFS = -D_SAFE -D_DEBUG -D_MATHOPT -DMTH -D_SLATEC
 
 tests: $(OBJS) 
 	cc test_options.o -o test_options $(INCS) $(LINKERFLAGS) $(TEST_LINKERFLAGS) $(LIBS)
+	cc test_stlstringtools.o -o test_stlstringtools $(INCS) $(LINKERFLAGS) $(TEST_LINKERFLAGS) $(LIBS)
 
 install:
 
 test_options.o : test_options.cpp  
 	cc -c test_options.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
+test_stlstringtools.o : test_stlstringtools.cpp  
+	cc -c test_stlstringtools.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
 clean:
 	rm -rf *.o

@@ -37,11 +37,9 @@ $(SUBDIRS):
 
 clean:
 	make -C misc clean 
-	make -C slatec clean
+	make -C plot clean
 	make -C core clean
-	rm -rf *.o
-	rm -rf *.a
-	rm libs/*
+	make -C solvers clean
 
 all:
 	make 

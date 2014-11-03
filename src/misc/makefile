@@ -18,7 +18,7 @@ OBJS =  \
 	tpointerstack.o \
 	linkedlist.o linkedlistpost.o \
 	option0.o options.o toption.o \
-#	filetools.o
+	filetools.o
 #	clocker.o \
 #	xmlparser.o xmlfinder.o \
 #	tracer.o tracertag.o tracerstring.o \
