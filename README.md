@@ -29,7 +29,7 @@ maximizer for problems with inequality constraints.
 Includes an OLS estimator, logit and  tobit estimators and a general
 curve fiter.
 
-* Plot - not ready
+* Plot - available - beta
 
 General plot utility that plots using gnuplot.
 
