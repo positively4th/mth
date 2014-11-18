@@ -17,7 +17,7 @@ OBJS =  \
 	timetools.o \
 	tpointerstack.o \
 	linkedlist.o linkedlistpost.o \
-	option0.o options.o toption.o \
+	option0.o options.o toption.o tptroption.o \
 	filetools.o
 #	clocker.o \
 #	xmlparser.o xmlfinder.o \
@@ -49,22 +49,6 @@ install: libs
 	cp -p $(STATIC_LIB) $(LIBDIR)
 	cp -p $(SHARED_LIB) $(LIBDIR)
 
-teststlstringtools : teststlstringtools.cpp stlstringtools.cpp stlstringtools.h $(OBJS)
-	make $(STATIC_LIB)
-	gcc -c teststlstringtools.cpp $(FLAGS) $(INCS)  $(DEFS)
-	gcc -o teststlstringtools teststlstringtools.o $(FLAGS) $(DEFS) $(LIBS) -lmthmisc $(TEST_LINKERFLAGS)
-
-testtpointerstack : testtpointerstack.cpp tpointerstack.cpp tpointerstack.h $(OBJS)
-	make $(STATIC_LIB)
-	gcc -c testtpointerstack.cpp $(FLAGS) $(INCS)  $(DEFS)
-	gcc -o testtpointerstack testtpointerstack.o $(FLAGS) $(DEFS) $(LIBS) -lmthmisc $(TEST_LINKERFLAGS)
-
-testclocker : testclocker.cpp clocker.cpp clocker.h $(OBJS)
-	make $(STATIC_LIB)
-	gcc -c testclocker.cpp $(FLAGS) $(INCS)  $(DEFS)
-	gcc -o testclocker testclocker.o $(FLAGS) $(DEFS) $(LIBS) \
-		-lmthmiscmath -lmthmisctslatectools -lmthmisccslatec -lf2cstatic -lmthmisc $(TEST_LINKERFLAGS)
-
 debug.o : debug.h debug.cpp  
 	cc -c debug.cpp $(INCS) $(DEFS) $(FLAGS)
 
@@ -83,9 +67,11 @@ option0.o : option0.h option0.cpp options.h texception.h
 toption.o : toption.h toption.cpp option0.h texception.h  
 	cc -c toption.cpp $(INCS) $(DEFS) $(FLAGS) -std=gnu++0x
 
+tptroption.o : tptroption.h tptroption.cpp option0.h texception.h  
+	cc -c tptroption.cpp $(INCS) $(DEFS) $(FLAGS) -std=gnu++0x
+
 options.o : options.h options.cpp option0.h texception.h  
 	cc -c options.cpp $(INCS) $(DEFS) $(FLAGS) -std=gnu++0x
-
 
 xmlparser.o : xmlparser.h xmlparser.cpp debug.h  
 	cc -c xmlparser.cpp $(INCS) $(DEFS) $(FLAGS)

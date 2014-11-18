@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <errno.h>
-#include <string.h>
+#include <cstring>
 
 //#include <tgridfunction.h>
 #include <tfunctions.h>
@@ -43,12 +43,12 @@ namespace P4th {
 
   template <class TYPE>
   Options *tPlot<TYPE>::ResetOptions() {
-    _stringOpt::set(Opts(), "baseDir", "/tmp");
-    _stringOpt::set(Opts(), "baseName", "/mthplot");
-    _stringOpt::set(Opts(), "separator", "|");
-    _stringOpt::set(Opts(), "fontPath", "./fonts");
-    _stringOpt::set(Opts(), "fontName", "liberation");
-    _stringOpt::set(Opts(), "type",  "X11"); // in {pdf, x11, ps, gif, png, tff}
+    _strOpt::set(Opts(), "baseDir", "/tmp");
+    _strOpt::set(Opts(), "baseName", "/mthplot");
+    _strOpt::set(Opts(), "separator", "|");
+    _strOpt::set(Opts(), "fontPath", "./fonts");
+    _strOpt::set(Opts(), "fontName", "liberation");
+    _strOpt::set(Opts(), "type",  "X11"); // in {pdf, x11, ps, gif, png, tff}
     _boolOpt::set(Opts(), "keepFiles",  "false");
     _doubleOpt::set(Opts(), "fontSize",  10.0);
     _doubleOpt::set(Opts(), "pitch",  60.0);
@@ -81,7 +81,7 @@ namespace P4th {
   
   template <class TYPE>
   string tPlot<TYPE>::GetTextColor(unsigned int ith) const {
-    _strVec colors = _strVecOpt::get(Opts(), "colors");
+    _strVec colors = _strVecOpt::read(Opts(), "colors");
     if ( ith > 0 && ith - 1 < colors.size()) {
       return colors[ith-1];
     }
@@ -90,7 +90,7 @@ namespace P4th {
 
   template <class TYPE>
   string tPlot<TYPE>::GetLineColor(unsigned int ith) const {
-    _strVec colors = _strVecOpt::get(Opts(), "colors");
+    _strVec colors = _strVecOpt::read(Opts(), "colors");
     if ( ith > 0 && ith - 1 < colors.size()) {
       return colors[ith-1];
     }
@@ -99,7 +99,7 @@ namespace P4th {
 
   template <class TYPE>
   string tPlot<TYPE>::GetLabelPosition(unsigned int ith) {
-    _strVec positions = _strVecOpt::get(Opts(), "labelPositions");
+    _strVec positions = _strVecOpt::read(Opts(), "labelPositions");
     assert(positions.size() > 0);
 
     ith = (ith - 1) % positions.size();
@@ -135,7 +135,7 @@ namespace P4th {
   template <class TYPE>
   void tPlot<TYPE>::PlotAfter()
   {
-    if (! _boolOpt::get(Opts(), "keepFiles")) {
+    if (! _boolOpt::read(Opts(), "keepFiles")) {
       for( cStrVecee it = files.begin() ; it < files.end(); it++) {
 	FileTools::Delete(*it);
       }
@@ -147,22 +147,22 @@ namespace P4th {
   {
 
     this->dim = this->intervals.size();
-    _strVec labels = STLStringTools::Split(labelstr, _stringOpt::get(Opts(), "separator"));
+    _strVec labels = STLStringTools::Split(labelstr, _strOpt::read(Opts(), "separator"));
     for (int i = labels.size() ; i < funcs->GetSize() ; i++) {
       labels.push_back("f_" + STLStringTools::AsString(i));
     }
     std::cout << labels.size() << std::endl << std::endl;
     string tmp;
 
-    string outputfile = FileTools::SafeFilename( _stringOpt::get(Opts(), "baseDir") + "/" ,  
-						 _stringOpt::get(Opts(), "baseName") , 
-						 _stringOpt::get(Opts(), "type") );
+    string outputfile = FileTools::SafeFilename( _strOpt::read(Opts(), "baseDir") + "/" ,  
+						 _strOpt::read(Opts(), "baseName") , 
+						 _strOpt::read(Opts(), "type") );
     
     funcs->ForEvery( &this->tPlot<TYPE>::WriteData , this );
 
     std::ofstream dest;
-    string gpbase = FileTools::SafeFilename(_stringOpt::get(Opts(), "baseDir") + "/",
-					    _stringOpt::get(Opts(), "baseName"), "gp");
+    string gpbase = FileTools::SafeFilename(_strOpt::read(Opts(), "baseDir") + "/",
+					    _strOpt::read(Opts(), "baseName"), "gp");
 
     OpenTextFile( dest , 
 		  gpbase , 
@@ -223,16 +223,16 @@ namespace P4th {
       this->AddPlotDo( "set origin 0.0,0.0" );
       this->AddPlotDo( (string)"set surface" );
       this->AddPlotDo( (string)"set view " + 
-		       STLStringTools::AsString(_doubleOpt::get(Opts(), "pitch" )) + "," +
-		       STLStringTools::AsString(_doubleOpt::get(Opts(), "yaw" )) + ",");
-      if (_boolOpt::get(Opts(), "showHidden")) {
+		       STLStringTools::AsString(_doubleOpt::read(Opts(), "pitch" )) + "," +
+		       STLStringTools::AsString(_doubleOpt::read(Opts(), "yaw" )) + ",");
+      if (_boolOpt::read(Opts(), "showHidden")) {
 	this->AddPlotDo( (string)"unset hidden3d" );
       } else {
 	this->AddPlotDo( (string)"set hidden3d" );
       }
-      if (_boolOpt::get(Opts(), "showContours")) {
+      if (_boolOpt::read(Opts(), "showContours")) {
 	TYPE delta = (TYPE)(round(max) - round(min)) 
-	  / (TYPE)(_intOpt::get(Opts(), "countorCount"));
+	  / (TYPE)(_intOpt::read(Opts(), "countorCount"));
 	this->AddPlotDo( (string)"set dgrid3d" );
 	this->AddPlotDo( (string)"set contour base" );
 	this->AddPlotDo( (string)"set clabel" );
@@ -251,7 +251,7 @@ namespace P4th {
 
     string outputfilepath = "";
     string outputfilename = outputfile;
-    string outputext = _stringOpt::get(Opts(), "type");
+    string outputext = _strOpt::read(Opts(), "type");
     int slashi = outputfile.find_last_of( '/' );
     if ( slashi  >= 0 )  
       {
@@ -259,9 +259,9 @@ namespace P4th {
 	outputfilename = STLStringTools::RightOfInc( outputfile , slashi + 1 );
       }
 
-    string fontname = _stringOpt::get(Opts(), "fontName");
-    string fontpath = _stringOpt::get(Opts(), "fontPath");
-    double fontsize = _doubleOpt::get(Opts(), "fontSize");
+    string fontname = _strOpt::read(Opts(), "fontName");
+    string fontpath = _strOpt::read(Opts(), "fontPath");
+    double fontsize = _doubleOpt::read(Opts(), "fontSize");
     if ( outputext == (string)"gif" )
       {
 	this->AddPlotDo( (string)"set terminal gif enhanced size 1024,1024 font \"" +  
@@ -303,7 +303,7 @@ namespace P4th {
 	 plotcmd = "plot ";
 	 plotfmt = " using 1:2 ";
        }
-     int labelMaxLength = _intOpt::get(Opts(), "labelMaxLength");
+     int labelMaxLength = _intOpt::read(Opts(), "labelMaxLength");
      for ( unsigned int plotctr = 0 ; plotctr < funcs->GetSize() ; plotctr++ )
        {
 	 label = labels[plotctr];
@@ -318,7 +318,7 @@ namespace P4th {
 			     plotfmt +
 			     + " title " + label + 
 			     + " with lines lt " + this->GetLineColor(plotctr+1)  
-			     + " lw " + STLStringTools::AsString( _intOpt::get(Opts(), "lineWidth" ) ) );
+			     + " lw " + STLStringTools::AsString( _intOpt::read(Opts(), "lineWidth" ) ) );
        }
     
      this->AddPlotDo( plotcmd + " " + STLStringTools::Join(allPlots, ",\\\n\t" ));
@@ -388,7 +388,7 @@ namespace P4th {
     tnmmatrix<TYPE> x( _this->dim , 1 );
     TYPE ytmp;
 
-    std::string filepath = _stringOpt::get(_this->Opts(), "baseDir") + "/" + "mth_data_f_" + STLStringTools::AsString( ith ) + 
+    std::string filepath = _strOpt::read(_this->Opts(), "baseDir") + "/" + "mth_data_f_" + STLStringTools::AsString( ith ) + 
       "_" + STLStringTools::AsString((unsigned int)TimeTools::Current2Time());
     _this->files.push_back(filepath);
     std::ofstream dest;

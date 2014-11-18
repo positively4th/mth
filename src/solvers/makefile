@@ -64,7 +64,7 @@ tnsolver.o : tnsolver.h tnsolver.cpp tstepper.h
 tintervalstepper.o : tintervalstepper.cpp tintervalstepper.h tnsolver.h    
 	cc -c tintervalstepper.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
-templates.o : templates.cpp   
+templates.o : templates.cpp solvertypes.h tnsolver.cpp tnsolver.h
 	cc -c templates.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
 

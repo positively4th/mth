@@ -3,12 +3,22 @@
  	Released under the GPLv3 license.
  	https://github.com/positively4th/mth
 */
+#include <solvertypes.h>
+
 #include <memory>
 #include <tnsolver.h>
 #include <tnmmatrix.h>
+#include <tptroption.h>
 
+
+#include <tptroption.cpp>
 #include <toption.cpp>
-template class P4th::tOption<P4th::tNSolver<double>::_stepper>;
-template class P4th::tOption<P4th::tNSolver<float>::_stepper>;
-template class P4th::tOption<P4th::tnmmatrix<double> >;
-template class P4th::tOption<P4th::tnmmatrix<float> >;
+namespace P4th {
+
+  template class tPtrOption<shared_ptr<NSolver::tStepper<double> >, NSolver::tStepper<double>>; 
+  template class tPtrOption<shared_ptr<NSolver::tStepper<float> >, NSolver::tStepper<float>>; 
+
+  template class tOption<tnmmatrix<double> >;
+  template class tOption<tnmmatrix<float> >;
+
+ }

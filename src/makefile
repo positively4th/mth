@@ -30,7 +30,7 @@ DEFS = -D_SAFE -D_DEBUG -D_MATHOPT -DMTH -D_SLATEC
 ROOTDIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 export LIBDIR="$(ROOTDIR)/libs"
 
-SUBDIRS = misc slatec core solvers plot
+SUBDIRS = misc slatec core solvers plot fit
 INSTALLDIRS = $(SUBDIRS:%=install-%)
 
 .PHONY: subdirs $(SUBDIRS)
@@ -59,6 +59,9 @@ clean:
 	make -C misc clean 
 	make -C slatec clean
 	make -C core clean
+	make -C solvers clean
+	make -C plot clean
+	make -C fit clean
 	rm -rf *.o
 	rm -rf *.a
 	rm -rf libs

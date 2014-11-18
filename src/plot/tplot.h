@@ -5,14 +5,17 @@
 */
 #pragma once
 
+#include <coretypes.h>
+
 #include <string>
 #include <fstream>
 #include <memory>
 
-//#include "tcommand.h"
 #include "tfunction0.h"
-#include "tgridfunction.h"
-//#include "tformula.h"
+//#include "tgridfunction.h"
+
+
+
 #include <tfunctions.h>
 #include <polymorphic.h>
 #include "tnmmatrix.h"
@@ -37,26 +40,15 @@ namespace P4th
   template<class TYPE> 
     class tPlot : public Polymorphic {
   public:
-
-    typedef tFunction0<TYPE> _f;
-    typedef tFunctions<TYPE> _fs;
-    typedef std::vector<string> _strVec;
-    typedef _strVec::const_iterator cStrVecee;
-    typedef _strVec::iterator _strVecee;
+    MTH_CORE_TYPES(TYPE)
     typedef std::vector<tInterval<TYPE> > _intervalList;
     typedef typename _intervalList::const_iterator _constIntervalListIt;
     typedef typename _intervalList::iterator _intervalListIt;
-    typedef unique_ptr<Options> _options;
-    typedef tOption<string> _stringOpt;
+
     typedef tOption<_strVec> _strVecOpt;
-    typedef tOption<int> _intOpt;
-    typedef tOption<bool> _boolOpt;
-    typedef tOption<TYPE> _typeOpt;
-    typedef tOption<double> _doubleOpt;
-    typedef tOption<tnmmatrix<TYPE> > _matrixOpt;
   protected:
 
-    _options options;
+    $$options options;
     int dim;
     _strVec initdos;
     _strVec plotdos; 
