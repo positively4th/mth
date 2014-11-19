@@ -2,6 +2,8 @@
 
 #include <coretypes.h>
 #include <misctypes.h>
+#include <fittypes.h>
+
 #include <memory>
 #include <vector>
 #include <map>
@@ -20,10 +22,11 @@ namespace P4th {
     
     template<class TYPE>
       class tWasher0 {
-
-    protected:
+    public:
       MTH_MISC_TYPES(TYPE)
       MTH_CORE_TYPES(TYPE)
+      MTH_FIT_TYPES(TYPE)
+    protected:
       tFit<TYPE> *estimator;
     public:
       tWasher0(tFit<TYPE> *aEstimator) {
@@ -34,24 +37,24 @@ namespace P4th {
 	{ this->estimator = source.estimator; }
       
 
-      //Washer must define these
+      //Any tWasher must define these
       virtual shared_ptr<_m> GetX() = 0;
       virtual shared_ptr<_m> GetY() = 0;
       virtual shared_ptr<string> GetRegressorMask() = 0;
       virtual shared_ptr<string> GetObservationMask() = 0;
 
-      /* Washers use these to read properties from the estimator */
+      /* tFit API */
       //Unwashed data
       const vector<tnmmatrix<TYPE> > &GetXs() const;
       const vector<tnmmatrix<TYPE> > &GetYs() const;
-      //Estimatino parameters
+      //Estimation parameters
       int GetK() const;
       int GetN() const;
       int GetM() const;
       //Statistics
-      shared_ptr<_m> Getmu() const;
-      shared_ptr<_m> Getsigma() const;
-      shared_ptr<_m> Getrho() const;
+      $_m Getmu() const;
+      $_m Getsigma() const;
+      $_m Getrho() const;
       //Misc
       string GetxName(int index) const;
       string GetyName(int nr) const;

@@ -32,7 +32,7 @@ namespace P4th {
   void tWasher<TYPE>::ResetOptions() {
     _boolOpt::set(options.get(), "debug", false); 
     _boolOpt::set(options.get(), "useIntercept", true);
-    _typeOpt::set(options.get(), "minMu" , 0.0000000000000);
+    _typeOpt::set(options.get(), "minMu" , 0.0000000000001);
     _typeOpt::set(options.get(), "correlationMax" , 1.0);
     _typeOpt::set(options.get(), "variationmin" , 0.0000000000000);
     _typeOpt::set(options.get(), "sigmamin" , 0.0000000000000);

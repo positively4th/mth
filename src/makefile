@@ -13,8 +13,6 @@ LIBS =	\
 	-lstdc++ \
 	-lm \
 
-#FLAGS = -g
-#FLAGS = -O2 -fpermissive
 FLAGS = -g -fno-default-inline -fpic  -rdynamic -fno-stack-protector -frounding-math -fsignaling-nans 
 
 LINKERFLAGS = -rdynamic -u MAIN__

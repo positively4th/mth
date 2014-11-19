@@ -1,4 +1,4 @@
-#include "tols.h"
+#include <tols.h>
 
 #include <string>
 #include <memory>
@@ -18,55 +18,59 @@
 namespace P4th
 {
 
-  template<class TYPE> 
-  tOLS<TYPE>::tOLS( int _M , int _K  ) :
-    tFit<TYPE>(_M , _K)
-  {
-    this->ResetOptions();
-  }
+  namespace Fit {
 
-  template<class TYPE> 
-  void tOLS<TYPE>::ResetOptions() {
-    tFit<TYPE>::ResetOptions();
-
-    _typeOpt::set(this->options.get(), "minDeterminant" , 0.00000001);
-    _boolOpt::set(this->options.get(), "_DB_PRINT_DET" , false);
-    _boolOpt::set(this->options.get(), "_DB_PRINT_XTX" , false);
-  }
-
-
-  template<class TYPE> 
-  void tOLS<TYPE>::AddObservation( const tnmmatrix<TYPE> &Y , const tnmmatrix<TYPE> &X )
-  {
-    if ( X.GetCols() != this->M )
-      throw aException(tOLS<TYPE>, "X.GetCols() != M");
-    return tFit<TYPE>::AddObservation(Y,X);
-  }
-  
-  template<class TYPE>
-  shared_ptr<tnmmatrix<TYPE> >  tOLS<TYPE>::EstimateB()
-  {
-    TYPE minDeterminant = _typeOpt::read(this->options.get(), "minDeterminant");
-    bool _DB_PRINT_DET = _boolOpt::read(this->options.get(), "_DB_PRINT_DET");
-    bool _DB_PRINT_XTX = _boolOpt::read(this->options.get(), "_DB_PRINT_XTX");
-
-    int MM = this->GetX()->GetCols();
-    int NN = this->GetX()->GetRows();
-    TYPE rcond;
-    TYPE det;
-
-    _m Xtrp(MM,NN);
-    _m Qinv(MM,MM);
-    _m Xtrpyvec(MM,this->GetK());
-    _m I(NN,NN);
-    _m BB(MM,this->GetK());
-
-    I.I();
-    if ( MM > 0 )
-      {
-	//	tMathTools<TYPE>::PrintMatrix( std::cout , X , 6 , "" , "" , "X: " );
-	//	std::cout << std::flush;
-	
+    template<class TYPE> 
+    tOLS<TYPE>::tOLS(tFit<TYPE> *_owner ) : 
+      tEstimator0<TYPE>( _owner ), options(new Options())
+    {
+      this->ResetOptions();
+    }
+    
+    template<class TYPE> 
+    void tOLS<TYPE>::ResetOptions() {
+      _typeOpt::set(this->options.get(), "minDeterminant" , 0.00000001);
+      _boolOpt::set(this->options.get(), "_DB_PRINT_DET" , false);
+      _boolOpt::set(this->options.get(), "_DB_PRINT_XTX" , false);
+    }
+    
+    
+    template<class TYPE>
+    shared_ptr<tnmmatrix<TYPE> >  tOLS<TYPE>::GetB()
+    {
+      if (B) {
+	return B;
+      }
+      
+      this->misc.clear();
+      TYPE minDeterminant = _typeOpt::read(this->options.get(), "minDeterminant");
+      bool _DB_PRINT_DET = _boolOpt::read(this->options.get(), "_DB_PRINT_DET");
+      bool _DB_PRINT_XTX = _boolOpt::read(this->options.get(), "_DB_PRINT_XTX");
+      
+      int MM = this->GetX()->GetCols();
+      int NN = this->GetX()->GetRows();
+      int KK = this->GetK();
+      TYPE rcond;
+      TYPE det;
+      
+      _m Xtrp(MM,NN);
+      _m Qinv(MM,MM);
+      _m Xtrpyvec(MM,KK);
+      _m I(NN,NN);
+      B.reset(new _m(MM,KK));
+      _mVec bCov;
+      _m matrixM(NN,NN);
+      _m e(NN,KK);
+      _m eTrp(KK,NN);
+      _m s2(KK,KK);
+      TYPE cond = 0;
+      
+      I.I();
+      if ( MM > 0 )
+	{
+	  //	tMathTools<TYPE>::PrintMatrix( std::cout , X , 6 , "" , "" , "X: " );
+	  //	std::cout << std::flush;
+	  
 	this->GetX()->Trp( &Xtrp );
 	Qinv.Mul( Xtrp , *this->GetX() ); 
 	if (_DB_PRINT_XTX)
@@ -86,69 +90,46 @@ namespace P4th
 	};
 	assert( rcond != 0.0 );
 	cond = 1.0 / rcond;
-	_DB( std::cout << "void tOLS<TYPE>::Estimate() : rcond = " << rcond << std::endl; );
 	Xtrpyvec.Mul( Xtrp , *this->GetY() );
-	BB.Mul(Qinv , Xtrpyvec);
+	B->Mul(Qinv , Xtrpyvec);
 
-	this->matrixM.reset(new _m( I - (*this->GetX()) * Qinv * Xtrp ));
-	//	_DB( _M.Print( std::cout , "M: \t" , 80 ) );
-	
-	//	_DB( std::cout << "Computing e" << std::endl; );
-	
-	this->e.reset(new _m(*this->matrixM * (*this->GetY())));
-	//	_DB( this->e.Print( std::cout , "e: \t" , 80 ) );
-
-	//	_DB( std::cout << "Computing s2" << std::endl; );
-	P4th::tnmmatrix<TYPE> eTrp( this->e->GetCols() , this->e->GetRows() );
-	this->e->Trp( &eTrp );
-	this->s2.reset( new _m((TYPE)( 1.0 / ( NN - MM ) ) * eTrp * (*this->e)));
-
-	//	_DB( std::cout << "Computing b covariances" << std::endl; );
-	this->bCovariances.clear();
-	for ( int col = 1 ; col <= this->GetK() ; col++ ) {
-	  //	  shared_ptr<_m> mptr = shared_ptr<_m>(new _m(MM,MM,0.0));
-	  //	  this->bCovariances.push_back(mptr);
-	  //	  this->bCovariances.emplace_back(new _m(MM,MM,0.0));
-	  this->bCovariances.emplace_back(new _m(this->s2->Get(col,col) * Qinv));
+	matrixM = I - (*this->GetX()) * Qinv * Xtrp;
+	e = matrixM * (*this->GetY());
+	e.Trp( &eTrp );
+	s2 = (TYPE)( 1.0 / ( NN - MM ) ) * eTrp * e;
+	for ( int col = 1 ; col <= KK ; col++ ) {
+	  bCov.emplace_back(s2(col,col) * Qinv);
 	}
       } else
-      BB.Cpy(0.0);
-    this->iterations = 1;
+      B->Cpy(0.0);
     
-    int ctr = 1; 
-    this->B.reset(new _m(this->GetM(), this->GetK(),  0.0));
-    for ( int i = 1 ; i <= this->B->GetRows() ; i++ )
-      {
-	if ( ctr > this->GetRegressors() )
-	  break;
-	if ( (*this->GetRegressorMask())[i-1] == '1' ) {
-	  for ( int k = 1 ; k <= this->GetK() ; k++ )
-	    (*this->GetB())(i,k) = BB(ctr,k);
-	  ctr++;
-	}
-      }
-
-    return this->B;
+    
+    //Relay non standard fit data to owner
+    this->misc["e"] = _mVec(1, e);
+    this->misc["s2"] = _mVec(1, s2);
+    this->misc["determinant"] = _mVec(1, _m(1,1,det));
+    this->misc["conditionNumber"] = _mVec(1, _m(1,1,cond));
+    this->misc["bCov"] = _mVec(bCov);
+    return B;  
   }
 
   template<class TYPE>
-  shared_ptr<tFunctions<TYPE> > tOLS<TYPE>::CreatePredictors() 
+  shared_ptr<tFunctions<TYPE> > tOLS<TYPE>::GetPredictors() 
   {
-    $string regressors = this->GetRegressorMask();
-    unsigned int xSize = regressors->size();
-    $_m B = this->GetB();
-
-    $_fs fs(new _fs());
-    for (unsigned int k = 1 ; k <= this->GetK() ; k++) { 
-      auto_ptr<_add> f(new _add()); 
-      for (unsigned int m = 1 ; m <= xSize ; m++ ) {
-	if ((*regressors)[m-1] != '0') {
-	  f->AddTerm(new _mul(new _arg(m), new _c(B->Get(m,k))));
+    if (!this->predictors) {
+      $_m B = this->GetB();
+      
+      predictors.reset(new _fs());
+      unique_ptr<_add> sum((_add *)NULL); 
+      for (unsigned int k = 1 ; k <= this->GetK() ; k++) { 
+	sum.reset(new _add());
+	for (unsigned int m = 1 ; m <= this->GetX()->GetCols() ; m++ ) {
+	  sum->AddTerm(new _mul(new _arg(m), new _c(B->Get(m,k))));
 	}
+	predictors->AddFunction(sum.release());
       }
-      fs->AddFunction(f.release());
     }
-    return fs;
+    return predictors;
   }
 
   template<class TYPE>
@@ -161,11 +142,15 @@ namespace P4th
     return res;
     
   }
-  
+
+
+    template class tOLS<float>;
+    template class tOLS<double>;
+
+  }  
+
 }
 
-template class P4th::tOLS<float>;
-template class P4th::tOLS<double>;
 
 
 

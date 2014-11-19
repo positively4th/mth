@@ -35,7 +35,6 @@ bool IsEqual( _m M1 , _m M2  , double tolerance  )
 
 BOOST_AUTO_TEST_CASE( Estimate_1 )
 {
-  return;
   const double dist_mul = 0.0001;
   tOLS<double> tols( 3 , 3 );
 
@@ -141,7 +140,6 @@ BOOST_AUTO_TEST_CASE( Estimate_1 )
 
 BOOST_AUTO_TEST_CASE( Estimate_2 )
 {
-  return;
   const int obsCount2 = 100;
   const int explCount2 = 4;
   const int depCount2 = 2;
@@ -180,7 +178,6 @@ BOOST_AUTO_TEST_CASE( Estimate_2 )
 
 BOOST_AUTO_TEST_CASE( SetVariationMin_1 )
 {
-  return;
   const double dist_mul = 0.0001;
   tOLS<double> tols( 3 , 3 );
   
@@ -289,7 +286,6 @@ BOOST_AUTO_TEST_CASE( SetVariationMin_1 )
 
 BOOST_AUTO_TEST_CASE( SetRhoMax_1 )
 {
-  return;
   const double dist_mul = 0.0001;
   tOLS<double> tols( 4 , 2 );
   _typeOpt::set(tols.GetWasherOptions().get(), "correlationMax" , 0.99);
@@ -378,8 +374,8 @@ BOOST_AUTO_TEST_CASE( SetRhoMax_1 )
 
 BOOST_AUTO_TEST_CASE( Greene_p_240 )
 {
-  tOLS<double> tols( 5 , 1 );
-  _m X(15,5 );
+  tOLS<double> tols( 6 , 1 );
+  _m X(15,6 );
   _m Y(15,1 );
   
   // Y
@@ -416,90 +412,107 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   X.Set(14 , 1 , 1 );
   X.Set(15 , 1 , 1 );
 
+  // i
+  X.Set(1 , 2 , 1 );
+  X.Set(2 , 2 , 1 );
+  X.Set(3 , 2 , 1 );
+  X.Set(4 , 2 , 1 );
+  X.Set(5 , 2 , 1 );
+  X.Set(6 , 2 , 1 );
+  X.Set(7 , 2 , 1 );
+  X.Set(8 , 2 , 1 );
+  X.Set(9 , 2 , 1 );
+  X.Set(10 , 2 , 1 );
+  X.Set(11 , 2 , 1 );
+  X.Set(12 , 2 , 1 );
+  X.Set(13 , 2 , 1 );
+  X.Set(14 , 2 , 1 );
+  X.Set(15 , 2 , 1 );
+
   // T
-  X.Set(1 , 2 , 1 ); // y = 3
-  X.Set(2 , 2 , 2 ); // y = 10
-  X.Set(3 , 2 , 3 ); // y = 2
-  X.Set(4 , 2 , 4 ); // y = 5
-  X.Set(5 , 2 , 5 ); // y = 6
-  X.Set(6 , 2 , 6 ); // y = 4
-  X.Set(7 , 2 , 7 ); // y = 7
-  X.Set(8 , 2 , 8 ); // y = 8
-  X.Set(9 , 2 , 9 ); // y = 9
-  X.Set(10 , 2 , 10 ); // y = 11
-  X.Set(11 , 2 , 11 ); // y = 3
-  X.Set(12 , 2 , 12 ); // y = 10
-  X.Set(13 , 2 , 13 ); // y = 2
-  X.Set(14 , 2 , 14 ); // y = 5
-  X.Set(15 , 2 , 15 ); // y = 6
+  X.Set(1 , 3 , 1 ); // y = 3
+  X.Set(2 , 3 , 2 ); // y = 10
+  X.Set(3 , 3 , 3 ); // y = 2
+  X.Set(4 , 3 , 4 ); // y = 5
+  X.Set(5 , 3 , 5 ); // y = 6
+  X.Set(6 , 3 , 6 ); // y = 4
+  X.Set(7 , 3 , 7 ); // y = 7
+  X.Set(8 , 3 , 8 ); // y = 8
+  X.Set(9 , 3 , 9 ); // y = 9
+  X.Set(10 , 3 , 10 ); // y = 11
+  X.Set(11 , 3 , 11 ); // y = 3
+  X.Set(12 , 3 , 12 ); // y = 10
+  X.Set(13 , 3 , 13 ); // y = 2
+  X.Set(14 , 3 , 14 ); // y = 5
+  X.Set(15 , 3 , 15 ); // y = 6
 
   // G
-  X.Set(1 , 3 , 1.058 );  
-  X.Set(2 , 3 , 1.088 ); 
-  X.Set(3 , 3 , 1.086 ); 
-  X.Set(4 , 3 , 1.122 ); 
-  X.Set(5 , 3 , 1.186 ); 
-  X.Set(6 , 3 , 1.254 ); 
-  X.Set(7 , 3 , 1.246 ); 
-  X.Set(8 , 3 , 1.232 ); 
-  X.Set(9 , 3 , 1.298 ); 
-  X.Set(10 , 3 , 1.370 );
-  X.Set(11 , 3 , 1.439 );  
-  X.Set(12 , 3 , 1.479 ); 
-  X.Set(13 , 3 , 1.474 ); 
-  X.Set(14 , 3 , 1.503 ); 
-  X.Set(15 , 3 , 1.475 ); 
+  X.Set(1 , 4 , 1.058 );  
+  X.Set(2 , 4 , 1.088 ); 
+  X.Set(3 , 4 , 1.086 ); 
+  X.Set(4 , 4 , 1.122 ); 
+  X.Set(5 , 4 , 1.186 ); 
+  X.Set(6 , 4 , 1.254 ); 
+  X.Set(7 , 4 , 1.246 ); 
+  X.Set(8 , 4 , 1.232 ); 
+  X.Set(9 , 4 , 1.298 ); 
+  X.Set(10 , 4 , 1.370 );
+  X.Set(11 , 4 , 1.439 );  
+  X.Set(12 , 4 , 1.479 ); 
+  X.Set(13 , 4 , 1.474 ); 
+  X.Set(14 , 4 , 1.503 ); 
+  X.Set(15 , 4 , 1.475 ); 
 
   // R
-  X.Set(1 , 4 , 5.16  );  
-  X.Set(2 , 4 , 5.87 ); 
-  X.Set(3 , 4 , 5.95 ); 
-  X.Set(4 , 4 , 4.88 ); 
-  X.Set(5 , 4 , 4.50 ); 
-  X.Set(6 , 4 , 6.44 ); 
-  X.Set(7 , 4 , 7.83 ); 
-  X.Set(8 , 4 , 6.25 ); 
-  X.Set(9 , 4 , 5.50 ); 
-  X.Set(10 , 4 , 5.46 );
-  X.Set(11 , 4 , 7.46 );  
-  X.Set(12 , 4 , 10.28 ); 
-  X.Set(13 , 4 , 11.77 ); 
-  X.Set(14 , 4 , 13.42 ); 
-  X.Set(15 , 4 , 11.02 ); 
+  X.Set(1 , 5 , 5.16  );  
+  X.Set(2 , 5 , 5.87 ); 
+  X.Set(3 , 5 , 5.95 ); 
+  X.Set(4 , 5 , 4.88 ); 
+  X.Set(5 , 5 , 4.50 ); 
+  X.Set(6 , 5 , 6.44 ); 
+  X.Set(7 , 5 , 7.83 ); 
+  X.Set(8 , 5 , 6.25 ); 
+  X.Set(9 , 5 , 5.50 ); 
+  X.Set(10 , 5 , 5.46 );
+  X.Set(11 , 5 , 7.46 );  
+  X.Set(12 , 5 , 10.28 ); 
+  X.Set(13 , 5 , 11.77 ); 
+  X.Set(14 , 5 , 13.42 ); 
+  X.Set(15 , 5 , 11.02 ); 
 
   // P
-  X.Set(1 , 5 , 4.40  );  
-  X.Set(2 , 5 , 5.15 ); 
-  X.Set(3 , 5 , 5.37 ); 
-  X.Set(4 , 5 , 4.99 ); 
-  X.Set(5 , 5 , 4.16 ); 
-  X.Set(6 , 5 , 5.75 ); 
-  X.Set(7 , 5 , 8.82 ); 
-  X.Set(8 , 5 , 9.31 ); 
-  X.Set(9 , 5 , 5.21 ); 
-  X.Set(10 , 5 , 5.83 );
-  X.Set(11 , 5 , 7.40 );  
-  X.Set(12 , 5 , 8.64 ); 
-  X.Set(13 , 5 , 9.31 ); 
-  X.Set(14 , 5 , 9.44 ); 
-  X.Set(15 , 5 , 5.99 ); 
+  X.Set(1 , 6 , 4.40  );  
+  X.Set(2 , 6 , 5.15 ); 
+  X.Set(3 , 6 , 5.37 ); 
+  X.Set(4 , 6 , 4.99 ); 
+  X.Set(5 , 6 , 4.16 ); 
+  X.Set(6 , 6 , 5.75 ); 
+  X.Set(7 , 6 , 8.82 ); 
+  X.Set(8 , 6 , 9.31 ); 
+  X.Set(9 , 6 , 5.21 ); 
+  X.Set(10 , 6 , 5.83 );
+  X.Set(11 , 6 , 7.40 );  
+  X.Set(12 , 6 , 8.64 ); 
+  X.Set(13 , 6 , 9.31 ); 
+  X.Set(14 , 6 , 9.44 ); 
+  X.Set(15 , 6 , 5.99 ); 
 
   // Y
 
   tols.AddObservation( Y , X );
-  tols.AddxNames( "1,T,G,R,P" );
+  tols.AddxNames( "1,i,T,G,R,P" );
   tols.AddyNames( "Y" );
-  //  tols.GetB();
-
+  _typeOpt::set(tols.GetWasherOptions().get(), "variationmin" , 0.01);
  
   _m B( *tols.GetB() );
   //  tols.PrintEstimate( std::cout );
   // p 266
   BOOST_CHECK_CLOSE_FRACTION( -0.50907 , B(1,1) , 0.001 );  
-  BOOST_CHECK_CLOSE_FRACTION( -0.01658 , B(2,1) , 0.001 );  
-  BOOST_CHECK_CLOSE_FRACTION( 0.67038 , B(3,1) , 0.001 );  
-  BOOST_CHECK_CLOSE_FRACTION( -0.0023259 , B(4,1) , 0.001 );  
-  BOOST_CHECK_CLOSE( -0.000094012 , B(5,1) , 1 );  
+  BOOST_CHECK_SMALL( B(2,1) , 0.001 );  
+  BOOST_CHECK_CLOSE_FRACTION( -0.01658 , B(3,1) , 0.001 );  
+  BOOST_CHECK_CLOSE_FRACTION( 0.67038 , B(4,1) , 0.001 );  
+  BOOST_CHECK_CLOSE_FRACTION( -0.0023259 , B(5,1) , 0.001 );  
+  BOOST_CHECK_CLOSE( -0.000094012 , B(6,1) , 1 );  
   // p 254
   BOOST_CHECK_CLOSE( 0.97244 , tols.GetR2()->Get(1,1) , 1 );  
   // p 266
@@ -518,5 +531,6 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   BOOST_CHECK_CLOSE( -0.000002279 , tols.GetBCovariance( 0 )->Get(5,3) , 1 );  
   BOOST_CHECK_CLOSE( -0.00000075071 , tols.GetBCovariance( 0 )->Get(5,4) , 1 );  
   BOOST_CHECK_CLOSE( 0.0000018157 , tols.GetBCovariance( 0 )->Get(5,5) , 1 );  
+  return;
 
 }

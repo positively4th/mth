@@ -136,7 +136,7 @@ namespace P4th {
   void tPlot<TYPE>::PlotAfter()
   {
     if (! _boolOpt::read(Opts(), "keepFiles")) {
-      for( cStrVecee it = files.begin() ; it < files.end(); it++) {
+      for( _cstrVecee it = files.begin() ; it < files.end(); it++) {
 	FileTools::Delete(*it);
       }
     }

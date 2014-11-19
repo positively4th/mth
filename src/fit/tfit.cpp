@@ -10,14 +10,19 @@
 #include <iomanip>
 #include <tmathtools.h>
 #include <tfunctions.h>
+#include <twasher.h>
+#include <tols.h>
+
 
 namespace P4th
 {
 
+  using namespace Fit;
+
   template<class TYPE> 
   tFit<TYPE>::tFit( int _M , int _K , int _P) :
     X(NULL), Y(NULL), B(NULL) , EY(NULL) , SST(NULL) , SSE(NULL) , MST(NULL) , MSE(NULL) , R2(NULL) , R2Adj(NULL) , 
-    matrixM(NULL) , s2(NULL) , options(new Options()), bCovariances()
+    options(new Options())
   {
     M = _M;
     K = _K;
@@ -30,6 +35,27 @@ namespace P4th
   void tFit<TYPE>::ResetOptions() {
     
     $_washerOpt::set(GetOptions().get(), "washer" , new _washer(this));
+    $_estimatorOpt::set(GetOptions().get(), "estimator" , new _ols(this));
+    _typeOpt::set(GetOptions().get(), "nullValue" , tMathTools<TYPE>::NaN());
+  }
+
+
+  template<class TYPE> 
+  unique_ptr<tnmmatrix<TYPE> > tFit<TYPE>::unWashMatrix(const _m *washedM)
+  {
+    TYPE nullValue = _typeOpt::read(this->GetOptions().get(), "nullValue");
+    $string mask = this->GetRegressorMask();
+    $$_m res(new _m(this->M,this->M)); 
+    for (int c = 1, cc = 1; c <= washedM->GetCols() ; cc++ ) 
+      for (int r = 1, rr = 1; r <= washedM->GetRows() ; rr++ ) 
+	{
+	  if ((*mask)[cc] != '0' && (*mask)[rr] != '0') {
+	    res->Set(rr,cc, washedM->Get(r++,c++));
+	  } else {
+	    res->Set(rr,cc, nullValue);
+	  }
+	}
+    return res;
   }
 
   template<class TYPE> 
@@ -230,7 +256,7 @@ namespace P4th
   shared_ptr<typename tFit<TYPE>::_m> tFit<TYPE>::GetB()
   {
     if (!B) {
-      B = this->EstimateB();
+      this->Estimate();
       assert(B);
     }
     return B;
@@ -339,16 +365,6 @@ namespace P4th
  
 
   template<class TYPE> 
-  shared_ptr<tnmmatrix<TYPE> > tFit<TYPE>::GetBCovariance( int k )
-  {
-    
-    $_m bCovariance = bCovariances[k];
-    if ( !(bCovariance.get()) )
-      throw aException(tFit<TYPE>, "bCovariance not computed" );
-    return bCovariances[k];
-  }
-
-  template<class TYPE> 
   shared_ptr<tFunctions<TYPE> > tFit<TYPE>::GetPredictors() 
   {
     if (!this->predictors) {
@@ -357,6 +373,15 @@ namespace P4th
     }
     return predictors;
   }
+
+  template<class TYPE> 
+  shared_ptr<tFunction0<TYPE> > tFit<TYPE>::GetPredictor(int ith)
+  {
+    //Todo: Try to avoid needing to clone....
+    return $_f(this->GetPredictors()->Get(ith)->Clone());
+  } 
+
+
 
   template<class TYPE> 
   std::ostream &tFit<TYPE>::PrintObservations( std::ostream &dest , string lm , int width )
@@ -374,10 +399,6 @@ namespace P4th
 	dest << lm << std::setw( width ) << STLStringTools::LeftOfExc( GetxName( i ) , width - 1 ).c_str();
     dest << std::endl;
     
-#ifdef _SAFE
-    Validate( "std::ostream &tFit<TYPE>::PrintObservations( std::ostream &dest , string lm , int width ) const" );
-#endif
-
     for ( int i = 0 ; i < GetN() ; i++ )
       {
 	_m y( ys[i] ); 
@@ -407,10 +428,6 @@ namespace P4th
       dest << std::setw( width ) << STLStringTools::LeftOfExc( GetxName(i) , width - 1 ).c_str();
     dest << std::endl;
     
-#ifdef _SAFE
-    Validate( "std::ostream &tFit<TYPE>::PrintMu( const _m &mu , std::ostream &dest , string lm , int width ) const" );
-#endif
-
     dest << lm;
     for ( int j = 1 ; j <= mu.GetCols() ; j++ )
       {
@@ -426,14 +443,18 @@ namespace P4th
   template<class TYPE> 
   std::ostream &tFit<TYPE>::PrintEstimate( std::ostream &dest , string lm , int width )
   {
+    $_estimator0 estimator = $_estimatorOpt::read(GetOptions().get(), "estimator");
+
+    typename _estimator0::_miscMap misc = estimator->GetMisc();
+    typename _estimator0::_miscMap::iterator bCovsIt = misc.find("s2");
+    bool useBCovs = bCovsIt != misc.end();
+
+
     dest << lm << std::setw( 4 ) << (const char *)"i";
     dest << std::setw( width ) << STLStringTools::LeftOfExc( "Explanatory" , width - 1 ).c_str() << " = ";
     for ( int i = 0 ; i < ynames.size() ; i++ )
       dest << std::setw( 4 ) << std::setw( width ) << STLStringTools::LeftOfExc( GetyName(i) , width - 1 ).c_str();
     dest << std::endl;
-#ifdef _SAFE
-    Validate( "std::ostream &tFit<TYPE>::PrintEstimate( std::ostream &dest , string lm , int width ) const" );
-#endif
 
     int jj = 0;
     for ( int j = 0 ; j < GetP() ; j++ )
@@ -447,17 +468,19 @@ namespace P4th
 	    STLStringTools::LeftOfExc( STLStringTools::AsString( GetB()->Get(j + 1,k + 1) , 10 , '.' ) , width - 1 ).c_str();
 	dest << std::endl;
 
-	dest << lm << std::setw( 4 ) << (const char *)" ";
-	dest << std::setw( width ) << (const char *)" " << "   ";
-	for( int k = 0 ; k < GetK() ; k++ ) {
-	  TYPE s = GetBCovariance(k)->Get( jj + 1 , jj + 1 );
-	  TYPE b = GetB()->Get(j + 1,k + 1);
-	  assert( s >= 0);
-	  dest << std::setw( width - 1 ) << 
-	    STLStringTools::LeftOfExc( (string)"(" + STLStringTools::AsString( b / sqrt(s) , 10 , '.' ) , width - 2 ).c_str()
-	       << ")";
+	if (useBCovs) {
+	  dest << lm << std::setw( 4 ) << " ";
+	  dest << std::setw( width ) << " " << "   ";
+	  for( int k = 0 ; k < GetK() ; k++ ) {
+	    TYPE s = (bCovsIt->second)[k].Get( jj + 1 , jj + 1 );
+	    TYPE b = GetB()->Get(j + 1,k + 1);
+	    assert( s >= 0);
+	    dest << std::setw( width - 1 ) << 
+	      STLStringTools::LeftOfExc( (string)"(" + STLStringTools::AsString( b / sqrt(s) , 10 , '.' ) , width - 2 ).c_str()
+		 << ")";
+	  }
+	  dest << std::endl;
 	}
-	dest << std::endl;
 	jj++;
       }
     dest << std::endl;
@@ -469,10 +492,6 @@ namespace P4th
   {
     int regressors = GetRegressors();
 
-    dest << lm 
-	 << std::setw( width ) << "Estimated " << regressors << " regressors in " << iterations << " iterations, using " 
-	 << xs.size() << " observations" << std::endl;
-    
     dest << lm 
 	 << std::setw( width ) << STLStringTools::LeftOfExc( "Statistics" , width - 1 );
     for ( int k = 0 ; k < GetK() ; k++ )

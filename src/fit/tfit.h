@@ -1,21 +1,23 @@
 #ifndef _P4TH_TREGRESSION_H_
 #define _P4TH_TREGRESSION_H_
 
-#include <misctypes.h>
-#include <coretypes.h>
-#include <fittypes.h>
+//#include <misctypes.h>
+//#include <coretypes.h>
+//#include <fittypes.h>
 
 
+#include <string>
 #include <vector>
 #include <map>
 #include <memory>
-#include <debug.h>
-#include <twasher.h>
+#include <texception.h>
 #include <tnmmatrix.h>
-#include <string>
 #include <options.h>
 #include <toption.h>
 #include <tptroption.h>
+
+#include <twasher0.h>
+#include <testimator0.h>
 
 //class istream;
 //class ::std::ostream;
@@ -47,7 +49,6 @@ namespace P4th
     int M;
     int K;
     int P;
-    int iterations;
 
     //These are generics that can be computed by this class
     $_m mu;
@@ -64,35 +65,23 @@ namespace P4th
     //These are set by the Washer composite
     $_m X;
     $_m Y;
-    shared_ptr<string> regressorMask;
-    shared_ptr<string> observationMask;
+    $string regressorMask;
+    $string observationMask;
 
     //These are set by the concrete child estimator class
-    $_m  matrixM; 
-    std::vector<$_m> bCovariances;
     $_fs predictors;
-
     $_m  B; 
     $_m  e;
     $_m  s2;
 
     $options options;
-
-    
-
     vector<_m > xs;
     vector<_m > ys;
-    
+    _strVec ynames;
+    _strVec xnames;
 
-    vector<string> ynames;
-    vector<string> xnames;
-
-    void Validate( const string &str ) const
-    {
-      if ( ys.size() != xs.size() )
-	throw str + (string)" : ys.size() != xs.size()";
-    }
-
+    void Estimate();
+    $$_m unWashMatrix(const _m *washedM);
   public:
     tFit( /* X columns */ int _M , /* Y columns */ int _K , /* Betas/Params/z */ int _P = -1);
 
@@ -138,13 +127,13 @@ namespace P4th
     virtual void AddxNames( string names ); // separated by ","
     string GetxName( int nr ) const
     { 
-      if ( nr < 0 ) _DBTHROW( "string tRegressio<TYPE>::GetxName( int nr ) : nr < 0" ); 
+      if ( nr < 0 ) throw aException(tFit<TYPE>, "GetxName( int nr ) : nr < 0" ); 
       if ( nr >= xnames.size() ) return ""; 
       return xnames[nr];
     }
     string GetyName( int nr ) const
     { 
-      if ( nr < 0 ) _DBTHROW( "string tRegressio<TYPE>::GetyName( int nr ) : nr < 0" ); 
+      if ( nr < 0 ) throw aException(tFit<TYPE>, "GetyName( int nr ) : nr < 0" ); 
       if ( nr >= ynames.size() ) return ""; 
       return ynames[nr];
     }
@@ -165,8 +154,8 @@ namespace P4th
     $_m GetX();
     //Dependent variables (washed data)
     $_m GetY();
-    shared_ptr<string> GetObservationMask();
-    shared_ptr<string> GetRegressorMask();
+    $string GetObservationMask();
+    $string GetRegressorMask();
 
     //Estimated parameters (for unwashed data) 
     $_m GetB();
@@ -179,20 +168,20 @@ namespace P4th
     $_m GetMST();
     $_m GetR2();
     $_m GetR2Adj();
-    //Covariance matrix
-    $_m GetBCovariance(int k = 0);
     //Get predictor functions
     $_fs GetPredictors(); 
-
+    $_f GetPredictor(int ith = 1); 
 
 
     virtual std::ostream &PrintObservations( std::ostream &dest , string lm = "" , int width = 10 );
     virtual std::ostream &PrintMu( const _m &mu , std::ostream &dest , string lm , int width );
     virtual std::ostream &PrintEstimate( std::ostream &dest , string lm = "" , int width = 10 );
     virtual std::ostream &PrintSummary( std::ostream &dest , string lm = "" , int width = 10 );
+
     
     //Abstract washer class defining an inerface for washer class implementations
     friend class tWasher0<TYPE>;
+    friend class tEstimator0<TYPE>;
     
   };
 

@@ -6,8 +6,8 @@
 #ifndef _TIMETOOLS_H_
 #define _TIMETOOLS_H_
 
-#include <time.h>
 #include <string>
+#include <time.h>
 
 using namespace std;
 
