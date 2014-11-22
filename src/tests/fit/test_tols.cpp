@@ -7,6 +7,7 @@
 #include <fittypes.h>
 
 #include <tols.h>
+#include <twasher.h>
 #include <randomtools.h>
 
 
@@ -36,9 +37,11 @@ bool IsEqual( _m M1 , _m M2  , double tolerance  )
 BOOST_AUTO_TEST_CASE( Estimate_1 )
 {
   const double dist_mul = 0.0001;
-  tOLS<double> tols( 3 , 3 );
+  _fit fit( 3 , 3 );
+  $options fitOpts = fit.GetOptions();
+  $_ols ols(new _ols(&fit));
+  $_estimatorOpt::set(fitOpts.get(), "estimator", ols);
 
-  
   tnmmatrix<double> X(10,3 );
   tnmmatrix<double> Y(10,3 );
   
@@ -115,24 +118,24 @@ BOOST_AUTO_TEST_CASE( Estimate_1 )
   Y.Set(9 , 3 , X(9,2) - X(9,3) + dist_mul * RandomTools::DrawUniform( -1 , 1 ) );  
   Y.Set(10 , 3 , X(10,2) - X(10,3) + dist_mul * RandomTools::DrawUniform( -1 , 1 ) );  
 
-  tols.AddObservation( Y , X );
-  tols.AddxNames( "1,X1,X2" );
-  tols.AddyNames( "Y1,Y2,Y3" );
+  fit.AddObservation( Y , X );
+  fit.AddxNames( "1,X1,X2" );
+  fit.AddyNames( "Y1,Y2,Y3" );
 
 
-  _m B( *tols.GetB() );
-  //  tols.PrintEstimate(std::cout);
+  _m B( *fit.GetB() );
+  //  fit.PrintEstimate(std::cout);
 
-  BOOST_CHECK_CLOSE_FRACTION( 2 , tols.Getb( 1 )["1"] , 0.001 );
-  BOOST_CHECK_CLOSE_FRACTION( tols.Getb( 1 )["X1"] , 1 , 0.001 );  
-  BOOST_CHECK_SMALL( tols.Getb( 1 )["X2"] , 0.001 ); 
+  BOOST_CHECK_CLOSE_FRACTION( 2 , fit.Getb( 1 )["1"] , 0.001 );
+  BOOST_CHECK_CLOSE_FRACTION( fit.Getb( 1 )["X1"] , 1 , 0.001 );  
+  BOOST_CHECK_SMALL( fit.Getb( 1 )["X2"] , 0.001 ); 
 
   BOOST_CHECK_SMALL( B(1,2) , 0.001 );
   BOOST_CHECK_SMALL( B(2,2) , 0.001 ); 
-  BOOST_CHECK_CLOSE_FRACTION( tols.Getb( 2 )["X2"] , -2 , 0.001 ); 
+  BOOST_CHECK_CLOSE_FRACTION( fit.Getb( 2 )["X2"] , -2 , 0.001 ); 
 
   BOOST_CHECK_SMALL( B(1,3) , 0.001 );
-  BOOST_CHECK_CLOSE_FRACTION( tols.Getb( 3 )["X1"] ,  1 , 0.001 );  
+  BOOST_CHECK_CLOSE_FRACTION( fit.Getb( 3 )["X1"] ,  1 , 0.001 );  
   BOOST_CHECK_CLOSE_FRACTION( B(3,3) , -1 , 0.001 );
 
 
@@ -143,9 +146,13 @@ BOOST_AUTO_TEST_CASE( Estimate_2 )
   const int obsCount2 = 100;
   const int explCount2 = 4;
   const int depCount2 = 2;
-  tOLS<double> tols2( explCount2 , depCount2 );
-  tols2.AddxNames( "1,x1,x2,x3" );
-  tols2.AddyNames( "y1,y2" );
+  _fit fit( explCount2 , depCount2 );
+  $options fitOpts = fit.GetOptions();
+  $_ols ols(new _ols(&fit));
+  $_estimatorOpt::set(fitOpts.get(), "estimator", ols);
+
+  fit.AddxNames( "1,x1,x2,x3" );
+  fit.AddyNames( "y1,y2" );
 
   _m B2( explCount2 , depCount2 );
   for ( int i = 1 ; i <= B2.GetRows() ; i++ )
@@ -159,43 +166,40 @@ BOOST_AUTO_TEST_CASE( Estimate_2 )
 	xRow.Set( 1 , j , RandomTools::DrawUniform( 0 , 1 ) );
       _m yRow( 1 , depCount2 );
       yRow.Mul( xRow , B2 );
-      tols2.AddObservation( yRow , xRow );
+      fit.AddObservation( yRow , xRow );
       
     }
   
-  tols2.GetB();
-  /*
-  tols2.PrintEstimate( std::cout , "" , 20 );
-  tols2.CalcSummary();
-  tols2.PrintSummary( std::cout , "" , 20 );
-  */
+  fit.GetB();
+  //  fit.PrintEstimate( std::cout , "" , 20 );
+  //  fit.PrintSummary( std::cout , "" , 20 );
   
-  BOOST_CHECK( IsEqual( B2 , *tols2.GetB() , 0.001 ) ); 
-  
-  
-//  std::cout << "\n\nTest tOLS #2 End\n" << std::flush;
+  BOOST_CHECK( IsEqual( B2 , *fit.GetB() , 0.001 ) ); 
 };
 
 BOOST_AUTO_TEST_CASE( SetVariationMin_1 )
 {
   const double dist_mul = 0.0001;
-  tOLS<double> tols( 3 , 3 );
-  
+  _fit fit(3,3);
   //Get the Options instance for the tOLS estimation:
-  $options options = tols.GetOptions();
+  $options options = fit.GetOptions();
   assert(options);
   //The Washer has its own Options instance, get it:
   $options washerOptions = $_washerOpt::read(options.get(), "washer")->GetOptions();
   assert(washerOptions);
-
   //Discard the (rightmost) explanatory it is highly correlated with another explanatory  
   _typeOpt::set(washerOptions.get(), "variationmin" , 0.01);
+  //Use the ols estimator
+  $_ols ols(new _ols(&fit));
+  $_estimatorOpt::set(options.get(), "estimator", ols);
+
   //Print discarded explanatories  
-  //  _boolOpt::set(washerOptions.get(), "debug" , true);
+  //  _boolOpt::set(washerOptions.get(), "debug" , true); //Need debug to print anything
   //  _boolOpt::set(washerOptions.get(), "_DB_PRINT_DISCARDS" , true);
+
+  /* The data */
+  // Explanatories
   _m X(10,3 );
-  _m Y(10,3 );
-  
 
   // i
   X.Set(1 , 1 , 1 );
@@ -233,6 +237,7 @@ BOOST_AUTO_TEST_CASE( SetVariationMin_1 )
   X.Set(9 , 3 , 3 ); 
   X.Set(10 , 3 , 4 );
 
+  _m Y(10,3 );
   // Column 1 - line y = 2  + x_1
   Y.Set(1 , 1 , 2 + X(1,2) + dist_mul * RandomTools::DrawUniform( -1 , 1 ) );  
   Y.Set(2 , 1 , 2 + X(2,2) + dist_mul * RandomTools::DrawUniform( -1 , 1 ) );  
@@ -269,13 +274,14 @@ BOOST_AUTO_TEST_CASE( SetVariationMin_1 )
   Y.Set(9 , 3 , X(9,2) - X(9,3) + dist_mul * RandomTools::DrawUniform( -1 , 1 ) );  
   Y.Set(10 , 3 , X(10,2) - X(10,3) + dist_mul * RandomTools::DrawUniform( -1 , 1 ) );  
 
-  tols.AddObservation( Y , X );
-  tols.AddxNames( "1,X1,X2" );
-  tols.AddyNames( "Y1,Y2,Y3" );
-  tols.GetB();
+  fit.AddObservation( Y , X );
+  fit.AddxNames( "1,X1,X2" );
+  fit.AddyNames( "Y1,Y2,Y3" );
 
+  //  fit.PrintEstimate( std::cout , "" , 20 );
+  //  fit.PrintSummary( std::cout , "" , 20 );
  
-  _m B( *tols.GetB() );
+  _m B( *fit.GetB() );
   BOOST_CHECK_SMALL( B(2,1) , 0.001 );  
   BOOST_CHECK_SMALL( B(2,2) , 0.001 ); 
   BOOST_CHECK_SMALL( B(2,3) , 0.001 );  
@@ -283,15 +289,23 @@ BOOST_AUTO_TEST_CASE( SetVariationMin_1 )
 
 }
 
-
 BOOST_AUTO_TEST_CASE( SetRhoMax_1 )
 {
   const double dist_mul = 0.0001;
-  tOLS<double> tols( 4 , 2 );
-  _typeOpt::set(tols.GetWasherOptions().get(), "correlationMax" , 0.99);
-  //Print discarded explanatories  
-  //  _boolOpt::set(tols.GetWasherOptions().get(), "debug" , true);
-  //  _boolOpt::set(tols.GetWasherOptions().get(), "_DB_PRINT_DISCARDS" , true);
+
+  _fit fit(4,2);
+  //Get the Options instance for the tOLS estimation:
+  $options options = fit.GetOptions();
+  assert(options);
+  //The Washer has its own Options instance, get it:
+  $options washerOptions = $_washerOpt::read(options.get(), "washer")->GetOptions();
+  //Discard the (rightmost) explanatory it is highly correlated with another explanatory  
+  _typeOpt::set(washerOptions.get(), "correlationMax" , 0.99);
+  //Use the ols estimator
+  $_ols ols(new _ols(&fit));
+  $_estimatorOpt::set(options.get(), "estimator", ols);
+
+
 
   _m X(10,4 );
   _m Y(10,2 );
@@ -354,14 +368,15 @@ BOOST_AUTO_TEST_CASE( SetRhoMax_1 )
     Y.Set(row , 2 , - X(row,1) - 2 * X(row,2) - 3 * X(row,3) - 4 * X(row,4) 
 	  + dist_mul * RandomTools::DrawUniform( -1 , 1 ) );  
   }
-  tols.AddObservation( Y , X );
-  tols.AddxNames( "X1,X2,X3,X4" );
-  tols.AddyNames( "Y1,Y2" );
-  tols.GetB();
-  //  tols.PrintEstimate( std::cout , "" , 20 );
+  fit.AddObservation( Y , X );
+  fit.AddxNames( "X1=i,X2,X3,X4" );
+  fit.AddyNames( "Y1,Y2" );
+  fit.GetB();
 
+  //  fit.PrintEstimate( std::cout , "" , 20 );
+  //  fit.PrintSummary( std::cout , "" , 20 );
  
-  _m B( *tols.GetB() );
+  _m B( *fit.GetB() );
   BOOST_CHECK_CLOSE_FRACTION( B(2,1) , 2 + 3 , 0.001 );  
   BOOST_CHECK_SMALL( B(3,1) , 0.001 );  
   BOOST_CHECK_CLOSE_FRACTION( B(2,2) , - 2 - 3 , 0.001 );  
@@ -374,11 +389,25 @@ BOOST_AUTO_TEST_CASE( SetRhoMax_1 )
 
 BOOST_AUTO_TEST_CASE( Greene_p_240 )
 {
-  tOLS<double> tols( 6 , 1 );
+  //Estimate 6 explanatories for 1 dependen variable:
+  _fit fit(6,1);
+
+  //Get the general Options for this fit instance and the washer:
+  $options options = fit.GetOptions();
+  $options washerOptions = $_washerOpt::read(options.get(), "washer")->GetOptions();
+
+  //Prevent pairs of regressor with a sufficently high correlation coefficient:
+  _typeOpt::set(washerOptions.get(), "variationmin" , 0.01);
+
+  //Create and use an OLS estimator
+  $_ols ols(new _ols(&fit));
+  $_estimatorOpt::set(options.get(), "estimator", ols);
+
+  //Setup the data:
   _m X(15,6 );
   _m Y(15,1 );
   
-  // Y
+  /* Dependents */
   Y.Set(1 , 1 , 0.161 );
   Y.Set(2 , 1 , 0.172 );
   Y.Set(3 , 1 , 0.158 );
@@ -395,6 +424,7 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   Y.Set(14 , 1 , 0.241 );
   Y.Set(15 , 1 , 0.204 );
 
+  /* Regressors */
   // 1
   X.Set(1 , 1 , 1 );
   X.Set(2 , 1 , 1 );
@@ -411,8 +441,7 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   X.Set(13 , 1 , 1 );
   X.Set(14 , 1 , 1 );
   X.Set(15 , 1 , 1 );
-
-  // i
+  // i (this regressor will be ignored)
   X.Set(1 , 2 , 1 );
   X.Set(2 , 2 , 1 );
   X.Set(3 , 2 , 1 );
@@ -428,7 +457,6 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   X.Set(13 , 2 , 1 );
   X.Set(14 , 2 , 1 );
   X.Set(15 , 2 , 1 );
-
   // T
   X.Set(1 , 3 , 1 ); // y = 3
   X.Set(2 , 3 , 2 ); // y = 10
@@ -445,7 +473,6 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   X.Set(13 , 3 , 13 ); // y = 2
   X.Set(14 , 3 , 14 ); // y = 5
   X.Set(15 , 3 , 15 ); // y = 6
-
   // G
   X.Set(1 , 4 , 1.058 );  
   X.Set(2 , 4 , 1.088 ); 
@@ -462,7 +489,6 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   X.Set(13 , 4 , 1.474 ); 
   X.Set(14 , 4 , 1.503 ); 
   X.Set(15 , 4 , 1.475 ); 
-
   // R
   X.Set(1 , 5 , 5.16  );  
   X.Set(2 , 5 , 5.87 ); 
@@ -479,7 +505,6 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   X.Set(13 , 5 , 11.77 ); 
   X.Set(14 , 5 , 13.42 ); 
   X.Set(15 , 5 , 11.02 ); 
-
   // P
   X.Set(1 , 6 , 4.40  );  
   X.Set(2 , 6 , 5.15 ); 
@@ -497,16 +522,25 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   X.Set(14 , 6 , 9.44 ); 
   X.Set(15 , 6 , 5.99 ); 
 
-  // Y
+  //Add all data in one call (can also be added row by row)
+  fit.AddObservation( Y , X );
 
-  tols.AddObservation( Y , X );
-  tols.AddxNames( "1,i,T,G,R,P" );
-  tols.AddyNames( "Y" );
-  _typeOpt::set(tols.GetWasherOptions().get(), "variationmin" , 0.01);
+  //Set the names of the regressors (optional):
+  fit.AddxNames( "1,i,T,G,R,P" );
+
+  //Set the names of the dependent variables (optional):
+  fit.AddyNames( "Y" );
+
  
-  _m B( *tols.GetB() );
-  //  tols.PrintEstimate( std::cout );
-  // p 266
+  //Get the estimated coefficients
+  _m B( *fit.GetB() );
+
+  //Print Estimation Summary
+  fit.PrintEstimate( std::cout , "" , 20 );
+  fit.PrintSummary( std::cout , "" , 20 );
+
+  /* Check agains Green */
+  // p. 266
   BOOST_CHECK_CLOSE_FRACTION( -0.50907 , B(1,1) , 0.001 );  
   BOOST_CHECK_SMALL( B(2,1) , 0.001 );  
   BOOST_CHECK_CLOSE_FRACTION( -0.01658 , B(3,1) , 0.001 );  
@@ -514,23 +548,28 @@ BOOST_AUTO_TEST_CASE( Greene_p_240 )
   BOOST_CHECK_CLOSE_FRACTION( -0.0023259 , B(5,1) , 0.001 );  
   BOOST_CHECK_CLOSE( -0.000094012 , B(6,1) , 1 );  
   // p 254
-  BOOST_CHECK_CLOSE( 0.97244 , tols.GetR2()->Get(1,1) , 1 );  
+  BOOST_CHECK_CLOSE( 0.97244 , fit.GetR2()->Get(1,1) , 1 );  
   // p 266
-  BOOST_CHECK_CLOSE( 0.0030391 , tols.GetBCovariance( 0 )->Get(1,1) , 1 );  
-  BOOST_CHECK_CLOSE( 0.00010234 , tols.GetBCovariance( 0 )->Get(2,1) , 1 );  
-  BOOST_CHECK_CLOSE( 0.0000038878 , tols.GetBCovariance( 0 )->Get(2,2) , 1 );  
-  BOOST_CHECK_CLOSE( -0.0030102 , tols.GetBCovariance( 0 )->Get(3,1) , 1 );  
-  BOOST_CHECK_CLOSE( -0.00010177 , tols.GetBCovariance( 0 )->Get(3,2) , 1 );  
-  BOOST_CHECK_CLOSE( 0.0030247 , tols.GetBCovariance( 0 )->Get(3,3) , 1 );  
-  BOOST_CHECK_CLOSE( 0.000005592 , tols.GetBCovariance( 0 )->Get(4,1) , 1 );  
-  BOOST_CHECK_CLOSE( -0.0000002885 , tols.GetBCovariance( 0 )->Get(4,2) , 1 );  
-  BOOST_CHECK_CLOSE( -0.0000072788 , tols.GetBCovariance( 0 )->Get(4,3) , 1 );  
-  BOOST_CHECK_CLOSE( 0.0000014856 , tols.GetBCovariance( 0 )->Get(4,4) , 1 );  
-  BOOST_CHECK_CLOSE( -0.0000032077 , tols.GetBCovariance( 0 )->Get(5,1) , 1 );  
-  // misprint?  BOOST_CHECK_CLOSE( -0.0000002573 , tols.GetBCovariance( 0 )->Get(5,2) , 1 );  
-  BOOST_CHECK_CLOSE( -0.000002279 , tols.GetBCovariance( 0 )->Get(5,3) , 1 );  
-  BOOST_CHECK_CLOSE( -0.00000075071 , tols.GetBCovariance( 0 )->Get(5,4) , 1 );  
-  BOOST_CHECK_CLOSE( 0.0000018157 , tols.GetBCovariance( 0 )->Get(5,5) , 1 );  
-  return;
+  //The b covariance matrices are not considered general fit estiamte data.
+  //To get them from the OLS estimation, get from the OLS misc property 
+  //(all estimators have misc data):
+  _mVec bCov = ols->GetMiscItem("bCov");
+  //The every misc item is a vector with matrices. In this case 1 for 
+  //every dependent variable.
+  BOOST_CHECK_CLOSE( 0.0030391 , bCov[0].Get(1,1) , 1 );  
+  BOOST_CHECK_CLOSE( 0.00010234 , bCov[0].Get(2,1) , 1 );  
+  BOOST_CHECK_CLOSE( 0.0000038878 , bCov[0].Get(2,2) , 1 );  
+  BOOST_CHECK_CLOSE( -0.0030102 , bCov[0].Get(3,1) , 1 );  
+  BOOST_CHECK_CLOSE( -0.00010177 , bCov[0].Get(3,2) , 1 );  
+  BOOST_CHECK_CLOSE( 0.0030247 , bCov[0].Get(3,3) , 1 );  
+  BOOST_CHECK_CLOSE( 0.000005592 , bCov[0].Get(4,1) , 1 );  
+  BOOST_CHECK_CLOSE( -0.0000002885 , bCov[0].Get(4,2) , 1 );  
+  BOOST_CHECK_CLOSE( -0.0000072788 , bCov[0].Get(4,3) , 1 );  
+  BOOST_CHECK_CLOSE( 0.0000014856 , bCov[0].Get(4,4) , 1 );  
+  BOOST_CHECK_CLOSE( -0.0000032077 , bCov[0].Get(5,1) , 1 );  
+  // misprint?  BOOST_CHECK_CLOSE( -0.0000002573 , bCov[0].Get(5,2) , 1 );  
+  BOOST_CHECK_CLOSE( -0.000002279 , bCov[0].Get(5,3) , 1 );  
+  BOOST_CHECK_CLOSE( -0.00000075071 , bCov[0].Get(5,4) , 1 );  
+  BOOST_CHECK_CLOSE( 0.0000018157 , bCov[0].Get(5,5) , 1 );  
 
 }

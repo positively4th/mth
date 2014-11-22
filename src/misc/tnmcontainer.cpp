@@ -563,9 +563,11 @@ namespace P4th {
   {
 #ifdef _SAFE
     if ( colnr < 1 || colnr + source->COLS - 1 > dest->COLS ) 
-      _DBTHROW( (string)"tnmContainer<TTYPE,DROWS,DCOLS> *Set( tnmContainer<TTYPE,DROWS,DCOLS> *dest , const  tnmContainer<TTYPE,SROWS,SCOLS> *source , int rownr , int colnr ) : colnr < 1 || colnr + SCOLS - 1 > DCOLS" );
+      throw aException( tnmContainer<TYPE> , 
+			"tnmContainer<TTYPE,DROWS,DCOLS> *Set( tnmContainer<TTYPE,DROWS,DCOLS> *dest , const  tnmContainer<TTYPE,SROWS,SCOLS> *source , int rownr , int colnr ) : colnr < 1 || colnr + SCOLS - 1 > DCOLS" );
     if ( rownr < 1 || rownr + source->ROWS - 1 > dest->ROWS ) 
-      _DBTHROW( (string)"tnmContainer<TTYPE,DROWS,DCOLS> *Set( tnmContainer<TTYPE,DROWS,DCOLS> *dest , const  tnmContainer<TTYPE,SROWS,SCOLS> *source , int rownr , int colnr ) : rownr < 1 || rownr + SROWS - 1 > DROWS" );
+      throw aException( tnmContainer<TYPE> , 
+			"tnmContainer<TTYPE,DROWS,DCOLS> *Set( tnmContainer<TTYPE,DROWS,DCOLS> *dest , const  tnmContainer<TTYPE,SROWS,SCOLS> *source , int rownr , int colnr ) : rownr < 1 || rownr + SROWS - 1 > DROWS" );
 #endif
     for ( int i = 1 ; i <= source->ROWS ; i++ )
       for ( int j = 1 ; j <= source->COLS ; j++ )

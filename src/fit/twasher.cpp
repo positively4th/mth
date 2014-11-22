@@ -259,8 +259,8 @@ namespace P4th {
     if ( maxregressors > 0 && regressors > maxregressors )
       regressors = maxregressors;
     
-    _DB( std::cout << "Using " << regressors << " regressors" << std::endl; ); 
-    _DB( std::cout << "Using " << observations << " observations" << std::endl; ); 
+    //    _DB( std::cout << "Using " << regressors << " regressors" << std::endl; ); 
+    //    _DB( std::cout << "Using " << observations << " observations" << std::endl; ); 
 
     if ( debug & _DB_PRINT_XMASK )
       std::cout << "regressorMask = " << *regressorMask << std::endl;

@@ -73,21 +73,25 @@ namespace P4th
     $_m  B; 
     $_m  e;
     $_m  s2;
+    $_m  predictions;
 
     $options options;
-    vector<_m > xs;
-    vector<_m > ys;
+    _mVec xs;
+    _mVec ys;
     _strVec ynames;
     _strVec xnames;
 
     void Estimate();
-    $$_m unWashMatrix(const _m *washedM);
+    $$_m unWash(const _m *washedM, const string &rowMask, const string &colMask, TYPE nullValue);
+    $$_m unWashB(const _m *washedM);
+    $$_fs unWash(const _fs *washedFunctions);
+    $_washer0 GetWasher() 
+      { return $_washerOpt::read(GetOptions().get(), "washer"); };
+    $_estimator0 GetEstimator() 
+      { return $_estimatorOpt::read(GetOptions().get(), "estimator"); };
+
   public:
     tFit( /* X columns */ int _M , /* Y columns */ int _K , /* Betas/Params/z */ int _P = -1);
-
-    virtual $_m EstimateB() = 0;
-    virtual _m &yhat( _m &res , const  _m &xrow , const  _m &B ) = 0;
-    virtual $_fs CreatePredictors() = 0; 
 
     void ResetOptions();
     $options GetOptions() 
@@ -106,15 +110,8 @@ namespace P4th
     { return GetX()->GetRows(); }
     map<string,double> Getb( int k );
 
-    virtual _m Getyhat( const _m &xrow )
-    { _m tmp(1,GetK()); return this->yhat( tmp , xrow , *GetB() ); }
-    
-    virtual _m &yhat( _m &res , const  _m &xrow  )
-    { return this->yhat( res , xrow , *GetB() ); }
+    virtual _m GetPredictions();
 
-    virtual TYPE Getyhat( const _m &xrow  , const _m &b )
-    { _m tmp(1,GetK()); return this->yhat( tmp , xrow , b ).Get(1,1); }
-    
     void AddObservation( TYPE y , const _m &xrow ) {
       AddObservation( _m( 1 , 1 , y ) , xrow );
     }

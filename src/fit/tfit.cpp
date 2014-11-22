@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <tmathtools.h>
 #include <tfunctions.h>
+#include <tselector.h>
 #include <twasher.h>
 #include <tols.h>
 
@@ -35,28 +36,60 @@ namespace P4th
   void tFit<TYPE>::ResetOptions() {
     
     $_washerOpt::set(GetOptions().get(), "washer" , new _washer(this));
-    $_estimatorOpt::set(GetOptions().get(), "estimator" , new _ols(this));
-    _typeOpt::set(GetOptions().get(), "nullValue" , tMathTools<TYPE>::NaN());
+    //    $_estimatorOpt::set(GetOptions().get(), "estimator" , new _ols(this));
+    //    _typeOpt::set(GetOptions().get(), "nullValue" , tMathTools<TYPE>::NaN());
   }
 
 
   template<class TYPE> 
-  unique_ptr<tnmmatrix<TYPE> > tFit<TYPE>::unWashMatrix(const _m *washedM)
+  unique_ptr<tFunctions<TYPE> > tFit<TYPE>::unWash(const _fs *washedFunctions)
   {
-    TYPE nullValue = _typeOpt::read(this->GetOptions().get(), "nullValue");
-    $string mask = this->GetRegressorMask();
-    $$_m res(new _m(this->M,this->M)); 
-    for (int c = 1, cc = 1; c <= washedM->GetCols() ; cc++ ) 
-      for (int r = 1, rr = 1; r <= washedM->GetRows() ; rr++ ) 
+    $$_fs inner(new _fs());
+    $string xmask = GetRegressorMask();
+    for (int i = 0 ; i < GetM() ; i++) {
+      if ((*xmask)[i] != '0') {
+	inner->AddFunction(new _arg(i+1));
+      }
+    } 
+    //Todo: Move this into tFunctions::Composite!
+    $$_fs res(new _fs());
+    for (int k = 1 ; k <= GetK() ; k++) {
+      res->AddFunction(_f::Composite(washedFunctions->Get(k)->Clone(), inner->Clone()));
+    }
+    return res;
+  }
+
+  template<class TYPE> 
+  unique_ptr<tnmmatrix<TYPE> > tFit<TYPE>::unWash(const _m *washedM, const string &rowMask, const string &colMask, TYPE nullValue )
+  {
+    assert(rowMask.size() > 0);
+    assert(colMask.size() > 0);
+    int rmLength = rowMask.size();
+    int cmLength = colMask.size();
+    $$_m res(new _m(rmLength,cmLength)); 
+    for (int c = 1, cc = 1; cc <= cmLength ; cc++ ) {
+      for (int r = 1, rr = 1; rr <= rmLength ; rr++ ) 
 	{
-	  if ((*mask)[cc] != '0' && (*mask)[rr] != '0') {
-	    res->Set(rr,cc, washedM->Get(r++,c++));
+	  if (colMask[cc-1] != '0' && rowMask[rr-1] != '0') {
+	    res->Set(rr,cc, washedM->Get(r++,c));
 	  } else {
 	    res->Set(rr,cc, nullValue);
 	  }
 	}
+      if (colMask[cc-1] != '0') {
+	c++;
+      }
+    }
     return res;
   }
+
+  template<class TYPE> 
+  unique_ptr<tnmmatrix<TYPE> > tFit<TYPE>::unWashB(const _m *washedM )
+  {
+    return this->unWash(washedM, *GetRegressorMask(), STLStringTools::Fill(GetK(),'1'), (TYPE)0.0);
+  }
+
+
 
   template<class TYPE> 
   void tFit<TYPE>::AddObservation( const _m &Y , const _m &X )
@@ -256,7 +289,8 @@ namespace P4th
   shared_ptr<typename tFit<TYPE>::_m> tFit<TYPE>::GetB()
   {
     if (!B) {
-      this->Estimate();
+      $_estimator0 estimator = GetEstimator();;
+      B = $_m(this->unWashB(estimator->GetB().get()).release());
       assert(B);
     }
     return B;
@@ -297,12 +331,12 @@ namespace P4th
   shared_ptr<typename tFit<TYPE>::_m> tFit<TYPE>::GetSSE() 
   {
     if (!SSE) {
+      _m predictions = this->GetPredictions();
       SSE.reset(new _m(1, GetK(), 0.0));
-      _m *_SSE = SSE.get();
       for ( int i = 0 ; i < ys.size() ; i++ )
 	if ( (*this->GetObservationMask())[i] != '0' )
 	  for ( int k = 1 ; k <= GetK() ; k++ )
-	    _SSE->Set(1 , k , _SSE->Get( 1 , k ) + pow( ys[i].Get(1,k) - Getyhat( xs[i] ).Get(1,k) , 2 ) );
+	    SSE->Set(1 , k , SSE->Get( 1 , k ) + pow( ys[i].Get(1,k) - predictions.Get(i+1,k) , 2 ) );
     }
     return SSE;
   }
@@ -368,7 +402,9 @@ namespace P4th
   shared_ptr<tFunctions<TYPE> > tFit<TYPE>::GetPredictors() 
   {
     if (!this->predictors) {
-      predictors = this->CreatePredictors();
+      $_estimator0 estimator = this->GetEstimator();
+      $_fs washedPredictors = estimator->GetPredictors();
+      predictors = this->unWash(washedPredictors.get());
       assert(predictors);
     }
     return predictors;
@@ -381,6 +417,20 @@ namespace P4th
     return $_f(this->GetPredictors()->Get(ith)->Clone());
   } 
 
+
+  template<class TYPE> 
+  tnmmatrix<TYPE> tFit<TYPE>::GetPredictions() 
+  {
+    if (!predictions) {
+      _fs *predictors = GetPredictors().get(); 
+      predictions.reset(new _m(xs.size(), GetK()));
+      int row = 1;
+      for( _mVecee xt = xs.begin(); xt != xs.end(); xt++) {
+	_m::Set(*predictions, predictors->y(xt->Trp()).Trp(), row++ ,1 );
+      } 
+    }
+    return *predictions;
+  }
 
 
   template<class TYPE> 
@@ -446,7 +496,7 @@ namespace P4th
     $_estimator0 estimator = $_estimatorOpt::read(GetOptions().get(), "estimator");
 
     typename _estimator0::_miscMap misc = estimator->GetMisc();
-    typename _estimator0::_miscMap::iterator bCovsIt = misc.find("s2");
+    typename _estimator0::_miscMap::iterator bCovsIt = misc.find("bCov");
     bool useBCovs = bCovsIt != misc.end();
 
 
@@ -540,12 +590,12 @@ namespace P4th
     dest << std::endl;
     return dest;
   }
-
-  template class tFit<float>;
-  template class tFit<double>;
-
   
 }
+
+
+template class ::P4th::tFit<float>;
+template class ::P4th::tFit<double>;
 
 
 

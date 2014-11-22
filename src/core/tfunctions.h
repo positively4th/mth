@@ -74,6 +74,8 @@ namespace P4th
     virtual bool InitDerivatives( bool analytical , int depth , int argnr );
     
     virtual tnmmatrix<TYPE> &y( tnmmatrix<TYPE> &res , const tnmmatrix<TYPE> &x ) const;
+    virtual tnmmatrix<TYPE> y( const tnmmatrix<TYPE> &x ) const 
+    { tnmmatrix<TYPE> res(this->GetSize(),1); this->y(res, x); return res;  };
     virtual LinkedList<TYPE> &y( LinkedList<TYPE> &res , const tnmmatrix<TYPE> &x ) const;
     virtual std::ostream &Dump( std::ostream &dest , string lm = "" ) const;
 

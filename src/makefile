@@ -37,6 +37,8 @@ subdirs: $(SUBDIRS)
 
 $(SUBDIRS):
 	$(MAKE) -C $@
+#	make install
+#	make -C tests
 
 install: libs $(INSTALLDIRS)
 

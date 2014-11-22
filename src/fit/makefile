@@ -17,12 +17,12 @@ LIBS =	\
 	-lm \
 
 OBJS = \
+	templates.o \
 	tfit.o \
 	twasher0.o \
 	twasher.o \
 	testimator0.o \
 	tols.o \
-	templates.o \
 
 
 
@@ -73,7 +73,9 @@ twasher0.o : twasher0.h twasher0.cpp
 testimator0.o : testimator0.h testimator0.cpp    
 	cc -c testimator0.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
-templates.o : templates.cpp ../misc/tptroption.h twasher.h twasher.cpp twasher0.h twasher0.cpp   
+templates.o : templates.cpp \
+	twasher0.h twasher0.cpp twasher.h twasher.cpp \
+	testimator0.h testimator0.cpp tfit.h tfit.cpp  
 	cc -c templates.cpp -std=gnu++0x $(INCS) $(DEFS) $(FLAGS)
 
 
