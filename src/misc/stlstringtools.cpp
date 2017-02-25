@@ -69,7 +69,7 @@ namespace P4th
 
   string STLStringTools::AsString( double vv , int prec , char decchar )
   {
-    if ( isnan( vv ) )
+    if ( std::isnan( vv ) )
       return "NaN";
     
     if ( vv < 0 )

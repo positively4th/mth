@@ -9,6 +9,8 @@
 #include <stlstringtools.h>
 #include <string>
 #include <toption.h>
+#include <tfunctions.h>
+#include <tselector.h>
 
 namespace P4th {
 
@@ -16,7 +18,7 @@ namespace P4th {
     
   template<class TYPE>
   tWasher<TYPE>::tWasher(tFit<TYPE> *aEstimator) : 
-    tWasher0<TYPE>(aEstimator) , options(new Options()) ,
+    tWasher0<TYPE>(aEstimator) ,
     X(NULL), Y(NULL), observationMask(NULL), regressorMask(NULL)
   {
     this->ResetOptions();
@@ -30,13 +32,13 @@ namespace P4th {
     
   template<class TYPE>
   void tWasher<TYPE>::ResetOptions() {
-    _boolOpt::set(options.get(), "debug", false); 
-    _boolOpt::set(options.get(), "useIntercept", true);
-    _typeOpt::set(options.get(), "minMu" , 0.0000000000001);
-    _typeOpt::set(options.get(), "correlationMax" , 1.0);
-    _typeOpt::set(options.get(), "variationmin" , 0.0000000000000);
-    _typeOpt::set(options.get(), "sigmamin" , 0.0000000000000);
-    _typeOpt::set(options.get(), "stddevmax" , 0.0000000000000);
+    this->tWasher0<TYPE>::ResetOptions();
+    _boolOpt::set(this->options.get(), "useIntercept", true);
+    _typeOpt::set(this->options.get(), "minMu" , 0.0000000000001);
+    _typeOpt::set(this->options.get(), "correlationMax" , 1.0);
+    _typeOpt::set(this->options.get(), "variationmin" , 0.0000000000000);
+    _typeOpt::set(this->options.get(), "sigmamin" , 0.0000000000000);
+    _typeOpt::set(this->options.get(), "stddevmax" , 0.0000000000000);
     _boolOpt::set(this->options.get(), "_DB_PRINT_OBSMASK", false);
     _boolOpt::set(this->options.get(), "_DB_PRINT_XMASK", false);
     _boolOpt::set(this->options.get(), "_DB_PRINT_DISCARDS", false);
@@ -83,17 +85,66 @@ namespace P4th {
     return observationMask;
   }
 
-  template<class TYPE>
+  template<class TYPE> 
+  unique_ptr<tFunctions<TYPE> > tWasher<TYPE>::unWash(const _fs *washedFunctions)
+  {
+    $$_fs inner(new _fs());
+    $string xmask = GetRegressorMask();
+    std::cout << "xmask = " << xmask << "M= " << this->GetM() << std::endl << std::flush;
+    for (int i = 0 ; i < this->GetM() ; i++) {
+      if ((*xmask)[i] != '0') {
+	inner->AddFunction(new _arg(i+1));
+      }
+    } 
+    //Todo: Move this into tFunctions::Composite!
+    $$_fs res(new _fs());
+    for (int k = 1 ; k <= this->GetK() ; k++) {
+      res->AddFunction(_f::Composite(washedFunctions->Get(k)->Clone(), inner->Clone()));
+    }
+    return res;
+  }
+
+  template<class TYPE> 
+  unique_ptr<tnmmatrix<TYPE> > tWasher<TYPE>::unWash(const _m *washedM, const string &rowMask, const string &colMask, TYPE nullValue )
+  {
+    assert(rowMask.size() > 0);
+    assert(colMask.size() > 0);
+    int rmLength = rowMask.size();
+    int cmLength = colMask.size();
+    $$_m res(new _m(rmLength,cmLength)); 
+    for (int c = 1, cc = 1; cc <= cmLength ; cc++ ) {
+      for (int r = 1, rr = 1; rr <= rmLength ; rr++ ) 
+	{
+	  if (colMask[cc-1] != '0' && rowMask[rr-1] != '0') {
+	    res->Set(rr,cc, washedM->Get(r++,c));
+	  } else {
+	    res->Set(rr,cc, nullValue);
+	  }
+	}
+      if (colMask[cc-1] != '0') {
+	c++;
+      }
+    }
+    return res;
+  }
+
+  template<class TYPE> 
+  unique_ptr<tnmmatrix<TYPE> > tWasher<TYPE>::unWashB(const _m *washedM )
+  {
+    return this->unWash(washedM, *GetRegressorMask(), STLStringTools::Fill(this->GetK(),'1'), (TYPE)0.0);
+  }
+
+    template<class TYPE>
   void tWasher<TYPE>::CopyObservations() 
   {
-    bool debug = _boolOpt::read(options.get(), "debug");
-    bool useIntercept = _boolOpt::read(options.get(), "useIntercept");
-    TYPE _MINMU = _typeOpt::read(options.get(), "minMu");
-    TYPE correlationMax = _typeOpt::read(options.get(), "correlationMax");
-    TYPE variationmin = _typeOpt::read(options.get(), "variationmin");
-    TYPE sigmamin = _typeOpt::read(options.get(), "sigmamin");
-    TYPE stddevmax = _typeOpt::read(options.get(), "stddevmax");
-    int maxregressors = _intOpt::read(options.get(), "maxregressors");
+    bool debug = _boolOpt::read(this->options.get(), "debug");
+    bool useIntercept = _boolOpt::read(this->options.get(), "useIntercept");
+    TYPE _MINMU = _typeOpt::read(this->options.get(), "minMu");
+    TYPE correlationMax = _typeOpt::read(this->options.get(), "correlationMax");
+    TYPE variationmin = _typeOpt::read(this->options.get(), "variationmin");
+    TYPE sigmamin = _typeOpt::read(this->options.get(), "sigmamin");
+    TYPE stddevmax = _typeOpt::read(this->options.get(), "stddevmax");
+    int maxregressors = _intOpt::read(this->options.get(), "maxregressors");
 
 
     bool _DB_PRINT_OBSMASK = _boolOpt::read(this->options.get(), "_DB_PRINT_OBSMASK");
@@ -312,11 +363,11 @@ namespace P4th {
     
 #ifdef _SAFE
     if ( var.GetCols() != var.GetRows() )
-      throw (string)"std::ostream &tFit<TYPE>::PrintVariation( const _m &var , std::ostream &dest , string lm , int width ) const : var.GetCols() != var.GetRows()";
+      throw (string)"std::ostream &tWasher<TYPE>::PrintVariation( const _m &var , std::ostream &dest , string lm , int width ) const : var.GetCols() != var.GetRows()";
     if ( var.GetCols() != this->GetM() + this->GetK()  )
-      throw (string)"std::ostream &tFit<TYPE>::PrintVariation( const _m &var , std::ostream &dest , string lm , int width ) const : var.GetCols() != GetM() + GetK()";
+      throw (string)"std::ostream &tWasher<TYPE>::PrintVariation( const _m &var , std::ostream &dest , string lm , int width ) const : var.GetCols() != GetM() + GetK()";
     
-    //    Validate( "std::ostream &tFit<TYPE>::PrintVariation( const _m &var , std::ostream &dest , string lm , int width ) const" );
+    //    Validate( "std::ostream &tWasher<TYPE>::PrintVariation( const _m &var , std::ostream &dest , string lm , int width ) const" );
 #endif
 
     for ( int i = 1 ; i <= var.GetRows() ; i++ )

@@ -33,7 +33,7 @@ namespace P4th
       _boolOpt::set(this->options.get(), "_DB_PRINT_DET" , false);
       _boolOpt::set(this->options.get(), "_DB_PRINT_XTX" , false);
     }
-    
+
     
     template<class TYPE>
     shared_ptr<tnmmatrix<TYPE> >  tOLS<TYPE>::GetB()

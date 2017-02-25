@@ -8,7 +8,15 @@ using namespace std;
 namespace P4th {
   
   namespace Fit {
-    
+
+    template <class TYPE>
+    tWasher0<TYPE>::tWasher0(tFit<TYPE> *aEstimator) :
+      options(new Options())
+    {
+      assert(aEstimator);
+      this->estimator = aEstimator;
+    }
+      
     template <class TYPE>
     const vector<tnmmatrix<TYPE> > &tWasher0<TYPE>::GetXs() const
     { 
@@ -19,6 +27,12 @@ namespace P4th {
     const vector<tnmmatrix<TYPE> > &tWasher0<TYPE>::GetYs() const
     { 
       return this->estimator->ys; 
+    }
+
+    template <class TYPE>
+    int tWasher0<TYPE>::GetP() const
+    { 
+      return this->estimator->GetK(); 
     }
 
     template <class TYPE>

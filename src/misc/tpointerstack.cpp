@@ -51,3 +51,5 @@ namespace P4th {
 
 }
     
+template class P4th::tPointerStack<float>;
+template class P4th::tPointerStack<double>;

@@ -14,7 +14,10 @@
 #include <tptroption.cpp>
 #include <toption.cpp>
 namespace P4th {
-
+  
+  template class tPtrOption<::std::shared_ptr<tNSolver<float> >, tNSolver<float> >;
+  template class tPtrOption<::std::shared_ptr<tNSolver<double> >, tNSolver<double> >;
+  
   template class tPtrOption<shared_ptr<NSolver::tStepper<double> >, NSolver::tStepper<double>>; 
   template class tPtrOption<shared_ptr<NSolver::tStepper<float> >, NSolver::tStepper<float>>; 
 

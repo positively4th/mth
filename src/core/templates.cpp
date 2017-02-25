@@ -10,9 +10,13 @@
 #include <linkedptrlist.cpp>
 template class P4th::LinkedPtrList<P4th::tAdd<float> *>;
 template class P4th::LinkedPtrList<P4th::tAdd<double> *>;
+template class P4th::LinkedPtrList<P4th::tFunction0<float> *>;
+template class P4th::LinkedPtrList<P4th::tFunction0<double> *>;
 #include <linkedptrlistpost.cpp>
 template class P4th::LinkedPtrListPost<P4th::tAdd<float> *>;
 template class P4th::LinkedPtrListPost<P4th::tAdd<double> *>;
+template class P4th::LinkedPtrListPost<P4th::tFunction0<float> *>;
+template class P4th::LinkedPtrListPost<P4th::tFunction0<double> *>;
 
 
 #include <tpointerstack.cpp>
@@ -20,3 +24,4 @@ template class P4th::tPointerStack<P4th::tFunctions<float> >;
 template class P4th::tPointerStack<P4th::tFunctions<double> >;
 template class P4th::tPointerStack<P4th::tFunction0<float> >;
 template class P4th::tPointerStack<P4th::tFunction0<double> >;
+

@@ -7,6 +7,8 @@
 #include <debug.h>
 
 #include <string>
+#include <iostream>
+#include <iomanip>
 
 #include <stlstringtools.h>
 

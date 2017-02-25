@@ -42,31 +42,33 @@ namespace P4th
   Options *tNSolver<TYPE>::ResetOptions()
   {
     //Smallest acceptable determinant 
-    _typeOpt::set(this->GetOptions(), "minDeterminant" , 0.0);
+    _typeOpt::set(this->GetOptions().get(), "minDeterminant" , 0.0);
     // Do not terminate unless the error is less then maxF  
-    _typeOpt::set(this->GetOptions(), "maxF" , -1);
+    _typeOpt::set(this->GetOptions().get(), "maxF" , -1);
     // Allow at most maxIterationns
-    _intOpt::set(this->GetOptions(), "maxIterations" , -1);
+    _intOpt::set(this->GetOptions().get(), "maxIterations" , -1);
     // Print numbers with at moste scalarWidth charcters
-    _intOpt::set(this->GetOptions(), "scalarWidth" , 8);
+    _intOpt::set(this->GetOptions().get(), "scalarWidth" , 8);
     // Print numbers with at moste scalarWidth charcters
 
     //Probability of being verbose in a single iteration 
-    _typeOpt::set(this->GetOptions(), "verbosity" , 0.0);
+    _typeOpt::set(this->GetOptions().get(), "verbosity" , 0.0);
     //If verbose, print x
-    _boolOpt::set(this->GetOptions(), "printX" , false );
+    _boolOpt::set(this->GetOptions().get(), "printX" , false );
+    //If printIteration, print header at start of each iteration
+    _boolOpt::set(this->GetOptions().get(), "printIteration" , false );
     //If verbose, print F (the error)
-    _boolOpt::set(this->GetOptions(), "printF" , false );
+    _boolOpt::set(this->GetOptions().get(), "printF" , false );
     //If verbose, print dF
-    _boolOpt::set(this->GetOptions(), "printdF" , false );
+    _boolOpt::set(this->GetOptions().get(), "printdF" , false );
     //If verbose, print det(F)
-    _boolOpt::set(this->GetOptions(), "printDeterminant" , false );
+    _boolOpt::set(this->GetOptions().get(), "printDeterminant" , false );
     //The change in x when computing dF, (0.0 change implies analytical derivative)
-    _matrixOpt::set(this->GetOptions(), "derivativeDeltas" , _m( 1 , 1 , 0.0 ) );
+    _matrixOpt::set(this->GetOptions().get(), "derivativeDeltas" , _m( 1 , 1 , 0.0 ) );
     //Simplify equations and derivatives before iterating
-    _boolOpt::set(this->GetOptions(), "simplify" , false );
+    _boolOpt::set(this->GetOptions().get(), "simplify" , false );
     
-    _stepperOpt::set(opts(), "stepper",  $stepper(new _stepper()));
+    $_stepperOpt::set(opts(), "stepper",  $_stepper(new _stepper()));
     
   }
 
@@ -195,13 +197,13 @@ namespace P4th
       if ( _typeOpt::read(opts(), "verbosity") > 0.0 )
 	std::cout << " to " << dF->Nodes() << " nodes." << std::endl;
     }
-    _stepperOpt::read(opts(), "stepper").get()->Open( this );
+    $_stepperOpt::read(opts(), "stepper").get()->Open( this );
   }
 
   template<class TYPE>
   void tNSolver<TYPE>::Close()
   {
-    _stepperOpt::read(opts(), "stepper").get()->Close( this );
+    $_stepperOpt::read(opts(), "stepper").get()->Close( this );
     choices.clear();
     equations.reset(new _fs());
     equationNames.clear();
@@ -220,43 +222,52 @@ namespace P4th
   template<class TYPE>
   bool tNSolver<TYPE>::Solve( const _m &x )
   {
+    
     TYPE minDeterminant = _typeOpt::read(opts(), "minDeterminant");
-    $stepper stepper(_stepperOpt::read(opts(), "stepper"));
+    $_stepper stepper($_stepperOpt::read(opts(), "stepper"));
     assert( x.GetCols() == 1 );
     assert( equations->GetSize() == choices.size() );
     assert( x.GetRows() == choices.size() );
-    assert( _typeOpt::get(opts(), "maxF") > 0 );
-    assert( _intOpt::get(opts(), "maxIterations") > 0 );
+    assert( _typeOpt::read(opts(), "maxF") > 0 );
+    assert( _intOpt::read(opts(), "maxIterations") > 0 );
     currentIteration = 0;
     currentX.SafeCopy( x );
     _m nextX( currentX.GetRows() , currentX.GetCols() );
     TYPE currentReciprocalCond;
     try {
       do {
+
+
 	verboseIteration = (double)(rand() % 1000) < 1000.0 * _typeOpt::read(opts(), "verbosity");
-	
-	if ( verboseIteration && _boolOpt::get(opts(), "printX") )
+
+	if ( verboseIteration && _boolOpt::read(opts(), "printIteration") ) {
+	  std::cout << "starting itertaion " << currentIteration << std::endl; 
+	}
+
+	if ( verboseIteration && _boolOpt::read(opts(), "printX") ) {
 	  PrintCurrentX( *this );
-	
+	}
+
 	F->y( currentF , currentX );
 	
-	if ( verboseIteration && _boolOpt::get(opts(), "printF") )
+	if ( verboseIteration && _boolOpt::read(opts(), "printF") ) {
 	  PrintCurrentF( *this );
+	}
 	
 	if ( AcceptGuess( *this ) )
 	  return true;
-	
+
 	if ( not TryNextGuess( *this ) ) 
 	  return false;
-	
+
 	dF->y( currentdF , currentX );
 	
-	if ( verboseIteration && _boolOpt::get(opts(), "printdF") )
+	if ( verboseIteration && _boolOpt::read(opts(), "printdF") ) {
 	  PrintCurrentdF( *this );
+	}
 	
-
 	currentDeterminant = currentdF.Det();
-	if ( verboseIteration && _boolOpt::get(opts(), "printDeterminant"))
+	if ( verboseIteration && _boolOpt::read(opts(), "printDeterminant"))
 	  std::cout << "|dF| = " << currentDeterminant << std::endl;
 
 	if ( (minDeterminant > 0) && (abs(currentDeterminant) < minDeterminant) )

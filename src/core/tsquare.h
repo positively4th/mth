@@ -45,7 +45,7 @@ namespace P4th
 
     virtual std::ostream &Dump( std::ostream &dest , string lm = "" ) const
     {
-      dest << __FILE__ << "(" << (void *)this << ")" << std::endl;
+      dest << lm << __FILE__ << "(" << (void *)this << ")" << std::endl;
       lm += "\t";
       this->f != NULL ? this->f->Dump( dest , lm ) : dest << lm << "NULL" << std::endl;
       return dest;

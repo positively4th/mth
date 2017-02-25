@@ -7,6 +7,7 @@
 #define _P4TH_TFUNCTION0_H_
 
 
+#include <iostream>
 #include <vector>
 #include <typeinfo>
 #include <linkedptrlist.h>
@@ -74,7 +75,7 @@ namespace P4th
 
 
     virtual std::ostream &Dump( std::ostream &dest , string lm = "" ) const {
-      dest << lm << __FILE__ << "(" << (void *)this << ")" << std::endl;
+      dest << (const string)lm << (const string)__FILE__ << (const string)"(" << (void *)this << (const string)")" << std::endl;
       return dest;
     }
     

@@ -3,6 +3,7 @@
 #include <twasher.h>
 #include <testimator0.h>
 #include <tols.h>
+#include <tfitls.h>
 
 #include <tptroption.cpp>
 template class ::P4th::tPtrOption<::std::shared_ptr<::P4th::Fit::tWasher0<float> >, ::P4th::Fit::tWasher0<float> >;
@@ -16,3 +17,6 @@ template class P4th::tPtrOption<::std::shared_ptr<::P4th::Fit::tEstimator0<doubl
 
 template class ::P4th::tPtrOption<::std::shared_ptr<::P4th::Fit::tOLS<float> >, ::P4th::Fit::tOLS<float> >;
 template class ::P4th::tPtrOption<::std::shared_ptr<::P4th::Fit::tOLS<double> >, ::P4th::Fit::tOLS<double> >;
+
+template class ::P4th::tPtrOption<::std::shared_ptr<::P4th::Fit::tFitLS<float> >, ::P4th::Fit::tFitLS<float> >;
+template class ::P4th::tPtrOption<::std::shared_ptr<::P4th::Fit::tFitLS<double> >, ::P4th::Fit::tFitLS<double> >;

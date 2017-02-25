@@ -1,9 +1,8 @@
-#ifndef _P4TH_TREGRESSION_H_
-#define _P4TH_TREGRESSION_H_
+#pragma once
 
-//#include <misctypes.h>
-//#include <coretypes.h>
-//#include <fittypes.h>
+#include <misctypes.h>
+#include <coretypes.h>
+#include <fittypes.h>
 
 
 #include <string>
@@ -19,8 +18,6 @@
 #include <twasher0.h>
 #include <testimator0.h>
 
-//class istream;
-//class ::std::ostream;
 
 /* 
 
@@ -82,9 +79,6 @@ namespace P4th
     _strVec xnames;
 
     void Estimate();
-    $$_m unWash(const _m *washedM, const string &rowMask, const string &colMask, TYPE nullValue);
-    $$_m unWashB(const _m *washedM);
-    $$_fs unWash(const _fs *washedFunctions);
     $_washer0 GetWasher() 
       { return $_washerOpt::read(GetOptions().get(), "washer"); };
     $_estimator0 GetEstimator() 
@@ -96,8 +90,6 @@ namespace P4th
     void ResetOptions();
     $options GetOptions() 
     { return this->options; }
-    $options GetWasherOptions() 
-      { return $_washerOpt::read(GetOptions().get(), "washer")->GetOptions(); }
     int GetN() const
     { return xs.size(); }
     int GetM() const
@@ -185,5 +177,3 @@ namespace P4th
 
 }
 
-
-#endif

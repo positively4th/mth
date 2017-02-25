@@ -62,7 +62,7 @@ namespace P4th
     $$fm0 dF;
     
     //Options
-    $$options options;
+    $options options;
 
     //States
     bool verboseIteration;
@@ -97,8 +97,8 @@ namespace P4th
      
      
      virtual Options *ResetOptions();
-     virtual Options *GetOptions() {
-       return this->opts();
+     virtual $options GetOptions() {
+       return this->options;
      }
      void AddChoice( string name );
      void AddEquation( $$_f aEquation , string name = "" );

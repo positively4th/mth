@@ -19,9 +19,9 @@ namespace P4th {
 
 typedef std::shared_ptr<::std::string> $string;
 
-typedef std::shared_ptr<::P4th::Options> $options;
-typedef std::unique_ptr<::P4th::Options> $$options;
-typedef std::shared_ptr<::P4th::Option0> $option0;
+typedef ::std::shared_ptr<::P4th::Options> $options;
+typedef ::std::unique_ptr<::P4th::Options> $$options;
+typedef ::std::shared_ptr<::P4th::Option0> $option0;
 typedef ::P4th::tOption<int> _intOpt;
 typedef ::P4th::tOption<::std::string> _strOpt;
 typedef ::P4th::tOption<float> _floatOpt;

@@ -3,7 +3,11 @@
  	Released under the GPLv3 license.
  	https://github.com/positively4th/mth
 */
+
 #include <debug.h>
+#include <cstddef>
+#include <execinfo.h>
+#include <stdio.h>
 
 namespace P4th {
 

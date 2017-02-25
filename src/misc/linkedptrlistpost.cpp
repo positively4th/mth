@@ -185,4 +185,7 @@ int LinkedPtrListPost<DTYPE>::operator==( const LinkedPtrListPost<DTYPE> &ll ) c
 	return 0;
 }
 
+template class P4th::LinkedPtrListPost<float *>;
+template class P4th::LinkedPtrListPost<double *>;
+
 }

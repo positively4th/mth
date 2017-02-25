@@ -48,9 +48,9 @@ namespace P4th {
     }
 
     template <class TYPE>
-    int tEstimator0<TYPE>::GetM() const
+    int tEstimator0<TYPE>::GetP() const
     { 
-      return this->owner->GetM(); 
+      return this->owner->GetP(); 
     }
 
     template class tEstimator0<float>;

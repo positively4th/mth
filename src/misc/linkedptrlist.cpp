@@ -346,8 +346,6 @@ void Destruct( LinkedPtrList<DTYPE> &list , int nr )
 
 template class P4th::LinkedPtrList<float *>;
 template class P4th::LinkedPtrList<double *>;
-template class P4th::LinkedPtrListPost<float *>;
-template class P4th::LinkedPtrListPost<double *>;
 
 }
 

@@ -44,9 +44,9 @@ namespace P4th {
 
 	/* tFit API */
 	//tFit parameters
+	int GetP() const;
 	int GetK() const;
 	int GetN() const;
-	int GetM() const;
 	//Washed data
 	$_m GetX();
 	$_m GetY();

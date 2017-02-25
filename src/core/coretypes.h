@@ -39,6 +39,9 @@ namespace P4th {
   template<class TYPE>
     class tParameter;				
   
+  template<class TYPE>
+    class tParameters;				
+  
   template <class TYPE>
     class tOption;
  
@@ -64,6 +67,7 @@ typedef _strVec::iterator _strVecee;
   typedef ::P4th::tMul<TYPE> _mul;		    \
   typedef ::P4th::tSelector<TYPE> _arg;		    \
   typedef ::P4th::tParameter<TYPE> _par;	    \
+  typedef ::P4th::tParameters<TYPE> _pars;	    \
   typedef ::P4th::tConstant<TYPE> _const;	    \
   typedef ::P4th::tConstant<TYPE> _c;		    \
   /* Shared ptr types */			    \
@@ -76,6 +80,7 @@ typedef _strVec::iterator _strVecee;
   typedef ::std::shared_ptr<_mul> $_mul;		    \
   typedef ::std::shared_ptr<_arg> $_arg;		    \
   typedef ::std::shared_ptr<_par> $_par;		    \
+  typedef ::std::shared_ptr<_pars> $_pars;		    \
   typedef ::std::shared_ptr<_const> $_const;		    \
   typedef ::std::shared_ptr<_c> $_c;			    \
   /* Unique ptr types */			    \
@@ -88,6 +93,7 @@ typedef _strVec::iterator _strVecee;
   typedef ::std::unique_ptr<_mul> $$_mul;		    \
   typedef ::std::unique_ptr<_arg> $$_arg;		    \
   typedef ::std::unique_ptr<_par> $$_par;		    \
+  typedef ::std::unique_ptr<_pars> $$_pars;		    \
   typedef ::std::unique_ptr<_const> $$_const;		    \
   typedef ::std::unique_ptr<_c> $$_c;			    \
   /* Vectors */						    \

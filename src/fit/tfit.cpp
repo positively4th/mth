@@ -11,7 +11,8 @@
 #include <tmathtools.h>
 #include <tfunctions.h>
 #include <tselector.h>
-#include <twasher.h>
+#include <twasher0.h>
+#include <tnowasher.h>
 #include <tols.h>
 
 
@@ -34,61 +35,8 @@ namespace P4th
 
   template<class TYPE> 
   void tFit<TYPE>::ResetOptions() {
-    
-    $_washerOpt::set(GetOptions().get(), "washer" , new _washer(this));
-    //    $_estimatorOpt::set(GetOptions().get(), "estimator" , new _ols(this));
-    //    _typeOpt::set(GetOptions().get(), "nullValue" , tMathTools<TYPE>::NaN());
+    $_washerOpt::set(GetOptions().get(), "washer" , new _noWasher(this));
   }
-
-
-  template<class TYPE> 
-  unique_ptr<tFunctions<TYPE> > tFit<TYPE>::unWash(const _fs *washedFunctions)
-  {
-    $$_fs inner(new _fs());
-    $string xmask = GetRegressorMask();
-    for (int i = 0 ; i < GetM() ; i++) {
-      if ((*xmask)[i] != '0') {
-	inner->AddFunction(new _arg(i+1));
-      }
-    } 
-    //Todo: Move this into tFunctions::Composite!
-    $$_fs res(new _fs());
-    for (int k = 1 ; k <= GetK() ; k++) {
-      res->AddFunction(_f::Composite(washedFunctions->Get(k)->Clone(), inner->Clone()));
-    }
-    return res;
-  }
-
-  template<class TYPE> 
-  unique_ptr<tnmmatrix<TYPE> > tFit<TYPE>::unWash(const _m *washedM, const string &rowMask, const string &colMask, TYPE nullValue )
-  {
-    assert(rowMask.size() > 0);
-    assert(colMask.size() > 0);
-    int rmLength = rowMask.size();
-    int cmLength = colMask.size();
-    $$_m res(new _m(rmLength,cmLength)); 
-    for (int c = 1, cc = 1; cc <= cmLength ; cc++ ) {
-      for (int r = 1, rr = 1; rr <= rmLength ; rr++ ) 
-	{
-	  if (colMask[cc-1] != '0' && rowMask[rr-1] != '0') {
-	    res->Set(rr,cc, washedM->Get(r++,c));
-	  } else {
-	    res->Set(rr,cc, nullValue);
-	  }
-	}
-      if (colMask[cc-1] != '0') {
-	c++;
-      }
-    }
-    return res;
-  }
-
-  template<class TYPE> 
-  unique_ptr<tnmmatrix<TYPE> > tFit<TYPE>::unWashB(const _m *washedM )
-  {
-    return this->unWash(washedM, *GetRegressorMask(), STLStringTools::Fill(GetK(),'1'), (TYPE)0.0);
-  }
-
 
 
   template<class TYPE> 
@@ -256,15 +204,15 @@ namespace P4th
   template<class TYPE> 
   shared_ptr<typename tFit<TYPE>::_m> tFit<TYPE>::GetX() 
   {
-    shared_ptr<_washer> washer = $_washerOpt::read(GetOptions().get(), "washer");
-      assert(washer);
-      return washer->GetX();
+    shared_ptr<_washer0> washer = $_washerOpt::read(GetOptions().get(), "washer");
+    assert(washer);
+    return washer->GetX();
   }
 
   template<class TYPE> 
   shared_ptr<typename tFit<TYPE>::_m> tFit<TYPE>::GetY() 
   {
-    shared_ptr<_washer> washer = $_washerOpt::read(GetOptions().get(), "washer");
+    shared_ptr<_washer0> washer = $_washerOpt::read(GetOptions().get(), "washer");
       assert(washer);
       return washer->GetY();
   }
@@ -272,7 +220,7 @@ namespace P4th
   template<class TYPE> 
   shared_ptr<string> tFit<TYPE>::GetRegressorMask() 
   {
-    shared_ptr<_washer> washer = $_washerOpt::read(GetOptions().get(), "washer");
+    shared_ptr<_washer0> washer = $_washerOpt::read(GetOptions().get(), "washer");
     assert(washer);
     return washer->GetRegressorMask();
   }
@@ -280,7 +228,7 @@ namespace P4th
   template<class TYPE> 
   shared_ptr<string> tFit<TYPE>::GetObservationMask() 
   {
-    shared_ptr<_washer> washer = $_washerOpt::read(GetOptions().get(), "washer");
+    shared_ptr<_washer0> washer = $_washerOpt::read(GetOptions().get(), "washer");
       assert(washer);
       return washer->GetObservationMask();
   }
@@ -288,9 +236,13 @@ namespace P4th
   template<class TYPE> 
   shared_ptr<typename tFit<TYPE>::_m> tFit<TYPE>::GetB()
   {
+    shared_ptr<_washer0> washer = $_washerOpt::read(GetOptions().get(), "washer");
     if (!B) {
       $_estimator0 estimator = GetEstimator();;
-      B = $_m(this->unWashB(estimator->GetB().get()).release());
+      estimator->GetB()->Print(std::cout, "B:\t", 80);
+
+      washer->unWashB(estimator->GetB().get()).release()->Print(std::cout, "B:\t", 80);
+      B = $_m(washer->unWashB(estimator->GetB().get()).release());
       assert(B);
     }
     return B;
@@ -401,10 +353,11 @@ namespace P4th
   template<class TYPE> 
   shared_ptr<tFunctions<TYPE> > tFit<TYPE>::GetPredictors() 
   {
+    shared_ptr<_washer0> washer = $_washerOpt::read(GetOptions().get(), "washer");
     if (!this->predictors) {
       $_estimator0 estimator = this->GetEstimator();
       $_fs washedPredictors = estimator->GetPredictors();
-      predictors = this->unWash(washedPredictors.get());
+      predictors = washer->unWash(washedPredictors.get());
       assert(predictors);
     }
     return predictors;

@@ -5,7 +5,8 @@
 #include <coretypes.h>
 #include <fittypes.h>
 
-#include <tfit.h>
+#include <options.h>
+#include <toption.h>
 #include <testimator0.h>
 
 namespace P4th

@@ -24,7 +24,6 @@ namespace P4th {
       MTH_MISC_TYPES(TYPE)
       MTH_CORE_TYPES(TYPE)
     protected:
-      shared_ptr<Options> options;
       shared_ptr<_m> X;
       shared_ptr<_m> Y;
       shared_ptr<string> regressorMask;
@@ -37,13 +36,16 @@ namespace P4th {
       tWasher(tFit<TYPE> *aEstimator);
       tWasher(const tWasher &source);
 
-      virtual $options GetOptions() 
-	{ return this->options; }
       virtual shared_ptr<_m> GetX();
       virtual shared_ptr<_m> GetY();
       virtual shared_ptr<string> GetRegressorMask();
       virtual shared_ptr<string> GetObservationMask();
+
+      virtual $$_m unWash(const _m *washedM, const string &rowMask, const string &colMask, TYPE nullValue);
+      virtual $$_m unWashB(const _m *washedM);
+      virtual $$_fs unWash(const _fs *washedFunctions);
       
+
     };
   }
 
