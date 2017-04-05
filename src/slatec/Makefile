@@ -29,7 +29,7 @@ DEFS = -D_SAFE -D_DEBUG
 
 STATIC_LIB=libmthslatec.a
 ifndef LIBDIR
-LIBDIR=.
+LIBDIR=/usr/local/lib
 endif
 
 $(STATIC_LIB) : libmthcslatec.a $(OBJS) 
